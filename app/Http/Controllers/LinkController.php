@@ -196,7 +196,7 @@ class LinkController extends Controller
 
 		return redirect()->back()->with('delete', true);
 	}
-	public function fetchOgMeta($url)
+	public function fetchAllMeta($url)
 	{
 		if (!filter_var($url, FILTER_VALIDATE_URL)) {
 			return ['error' => 'URL không hợp lệ'];
@@ -209,23 +209,24 @@ class LinkController extends Controller
 
 			$crawler = new Crawler($html);
 
-			$ogMeta = [];
+			$metaTags = [];
 
-			// Tìm tất cả thẻ meta có property bắt đầu bằng "og:"
-			$crawler->filterXpath('//meta[starts-with(@property, "og:")]')->each(function ($node) use (&$ogMeta) {
-				$property = $node->attr('property');
+			// Lấy tất cả thẻ <meta>
+			$crawler->filterXpath('//meta')->each(function ($node) use (&$metaTags) {
+				$property = $node->attr('property') ?? $node->attr('name'); // Lấy cả "property" và "name"
 				$content = $node->attr('content') ?? '';
 
 				if ($property) {
-					$ogMeta[$property] = $content;
+					$metaTags[$property] = $content;
 				}
 			});
 
-			return $ogMeta ?: ['error' => 'Không tìm thấy thẻ Open Graph'];
+			return $metaTags ?: ['error' => 'Không tìm thấy thẻ meta'];
 		} catch (\Exception $e) {
-			return ['error' => 'Không thể lấy dữ liệu'];
+			return ['error' => 'Không thể lấy dữ liệu: ' . $e->getMessage()];
 		}
 	}
+
 	public function fetchFullPage( $url)
     {
   
@@ -283,7 +284,7 @@ class LinkController extends Controller
 			$link = 'https://api.whatsapp.com/send?phone='.$link->phone_number.'&text=' . rawurlencode($link->content);
 		else
 			$link = $link->url;
-		$config = $this->fetchOgMeta($link);
+		$config = $this->fetchAllMeta($link);
 		dd($config);
 		
 		return view('view', compact('link','config'));
