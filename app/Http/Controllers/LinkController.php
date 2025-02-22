@@ -13,6 +13,7 @@ use App\Exports\LinksExport;
 use GuzzleHttp\Client;
 use Symfony\Component\DomCrawler\Crawler;
 use Maatwebsite\Excel\Facades\Excel;
+use DOMDocument;
 
 class LinkController extends Controller
 {
@@ -198,6 +199,7 @@ class LinkController extends Controller
 	}
 	public function fetchAllMeta($url)
 	{
+		// Kiểm tra URL hợp lệ
 		if (!filter_var($url, FILTER_VALIDATE_URL)) {
 			return ['error' => 'URL không hợp lệ'];
 		}
@@ -209,41 +211,43 @@ class LinkController extends Controller
 					'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
 					'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
 					'Accept-Language' => 'en-US,en;q=0.5',
-					'Connection' => 'keep-alive',
-					'Referer' => $url,
 				],
-				'cookies' => true,  // Giữ cookies để tránh bị chặn
-				'allow_redirects' => true  // Cho phép chuyển hướng
 			]);
-	
+
+			// Gửi yêu cầu GET
 			$response = $client->request('GET', $url);
-			
-			// Kiểm tra nếu HTTP không phải 200
+
+			// Kiểm tra mã trạng thái HTTP
 			if ($response->getStatusCode() !== 200) {
 				return ['error' => 'Không thể lấy dữ liệu, HTTP Code: ' . $response->getStatusCode()];
 			}
-	
+
+			// Lấy nội dung HTML
 			$html = $response->getBody()->getContents();
-			
+
 			// Kiểm tra nếu HTML rỗng
 			if (empty($html)) {
 				return ['error' => 'HTML trả về rỗng! Có thể bị chặn.'];
 			}
-	
-			$crawler = new Crawler($html);
-		
-			$metaTags = [];
+
+			// Sử dụng DOMDocument để phân tích HTML
+			$dom = new DOMDocument();
+			@$dom->loadHTML($html); // Sử dụng @ để bỏ qua cảnh báo HTML không hợp lệ
 
 			// Lấy tất cả thẻ <meta>
-			$crawler->filterXpath('//meta')->each(function ($node) use (&$metaTags) {
-				$property = $node->attr('property') ?? $node->attr('name'); // Lấy cả "property" và "name"
-				$content = $node->attr('content') ?? '';
+			$metaTags = [];
+			$metaElements = $dom->getElementsByTagName('meta');
+
+			foreach ($metaElements as $meta) {
+				$property = $meta->getAttribute('property') ?? $meta->getAttribute('name'); // Lấy cả "property" và "name"
+				$content = $meta->getAttribute('content') ?? '';
 
 				if ($property) {
 					$metaTags[$property] = $content;
 				}
-			});
+			}
 
+			// Trả về kết quả
 			return $metaTags ?: ['error' => 'Không tìm thấy thẻ meta'];
 		} catch (\Exception $e) {
 			return ['error' => 'Không thể lấy dữ liệu: ' . $e->getMessage()];
