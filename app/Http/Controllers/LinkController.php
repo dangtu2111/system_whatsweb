@@ -218,7 +218,7 @@ class LinkController extends Controller
 			}
 	
 			$html = $response->getBody()->getContents();
-	
+			dd($html);
 			// Kiểm tra nếu HTML rỗng
 			if (empty($html)) {
 				return ['error' => 'HTML trả về rỗng! Có thể bị chặn.'];
