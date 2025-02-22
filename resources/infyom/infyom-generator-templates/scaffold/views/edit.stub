@@ -1,0 +1,35 @@
+@extends('layouts.app', ['title' => '$MODEL_NAME_HUMAN$'])
+
+@section('content')
+	<section class="section">
+		<div class="section-header">
+			<div class="section-header-back">
+			  <a href="{!! route('$ROUTE_NAMED_PREFIX$$MODEL_NAME_PLURAL_CAMEL$.index') !!}" class="btn btn-icon"><i class="fas fa-arrow-left"></i></a>
+			</div>
+			<h1>$MODEL_NAME_HUMAN$</h1>
+		</div>
+
+		@include('adminlte-templates::common.errors')
+
+		<div class="section-body">
+			<div class="row">
+				<div class="col-12">
+					<div class="card">
+						<div class="card-header">
+							<h4>Edit $MODEL_NAME_HUMAN$</h4>
+						</div>
+						<div class="card-body">
+							<div class="row"> 
+								{!! Form::model($$MODEL_NAME_CAMEL$, ['route' => ['$ROUTE_NAMED_PREFIX$$MODEL_NAME_PLURAL_CAMEL$.update', $$MODEL_NAME_CAMEL$->$PRIMARY_KEY_NAME$], 'method' => 'patch']) !!}
+
+									  @include('$VIEW_PREFIX$$MODEL_NAME_PLURAL_SNAKE$.fields')
+
+								{!! Form::close() !!}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+@endsection

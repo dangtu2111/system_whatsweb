@@ -1,0 +1,116 @@
+/**
+ *
+ * You can write your CSS code here, DO NOT touch the default JavaScript file
+ * because it will make it harder for you to update.
+ * 
+ */
+
+.dataTables_processing {
+	position: absolute;
+}
+
+.card-body form {
+	display: inline-block;
+	width: 100%;
+}
+
+.main-sidebar {
+	background-color: #005e54;
+	width: 230px;
+}
+
+.main-sidebar .sidebar-menu li a {
+	color: #6ed1c5;
+}
+.main-sidebar .sidebar-menu li a:hover,
+.main-sidebar .sidebar-menu li.active a {
+	background-color: #0a544c;
+}
+.main-sidebar .sidebar-menu li.active a {
+	color: #fff;
+}
+
+.navbar-bg,
+.navbar {
+	background-color: #fff;
+	right: 0;
+	left: 230px;
+}
+
+body.sidebar-gone .navbar-bg,
+body.sidebar-gone .navbar,
+body.sidebar-show .navbar-bg,
+body.sidebar-show .navbar {
+	left: 0;
+}
+
+.navbar .nav-link.nav-link-lg {
+	line-height: 23px;
+}
+
+.navbar .nav-link.nav-link-user,
+.navbar .nav-link {
+	color: #000;
+}
+.navbar .nav-link.nav-link-user:hover,
+.navbar .nav-link:hover {
+	color: #000;
+	opacity: .6;
+}
+
+.navbar .form-inline .btn,
+.navbar .form-inline .form-control {
+	background-color: #fdfdff;
+}
+
+.main-sidebar .sidebar-brand a {
+	color: #fff;
+}
+
+.main-sidebar .sidebar-menu li.menu-header {
+	color: #16998a;
+}
+
+.section .section-header {
+	margin-left: -30px;
+	margin-right: -30px;
+	margin-top: -10px;
+	border-radius: 0;
+	border-top: 1px solid #f9f9f9;
+	padding-left: 35px;
+	padding-right: 35px;
+}
+
+.form-group .control-label, .form-group > label {
+	margin-top: 13px;
+}
+
+body:not(.sidebar-gone) .main-content {
+	padding-left: 260px;
+}
+body.sidebar-show .main-content,
+body.sidebar-gone .main-content {
+	padding-left: 30px;
+}
+
+body.sidebar-mini .main-sidebar {
+
+}
+
+body.sidebar-mini .main-sidebar:after {
+	background-color: #005e54;
+}
+
+body.sidebar-mini .main-sidebar .sidebar-menu > li.active > a {
+	background-color: #fff;
+	box-shadow: none;
+	color: #005e54;
+}
+
+.note-toolbar.card-header {
+	min-height: auto;
+}
+
+.pagination {
+	margin-bottom: 0;
+}
