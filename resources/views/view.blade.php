@@ -16,7 +16,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:type" content="video.other">
+    <meta property="og:type" content="website">
     <meta property="og:title" content="Khải Azcam">
     <meta property="og:description" content="Hôm nào thấy có đầu bếp Kim là biết được ăn ngon">
     <meta property="og:url" content="https://www.facebook.com/khaintt/posts/h%C3%B4m-n%C3%A0o-th%E1%BA%AFy-c%C3%B3-%C4%91%E1%BA%A7u-b%E1%BA%BFp-kim-l%C3%A0-bi%E1%BA%BFt-%C4%91%C6%B0%E1%BB%A3c-%C4%83n-ngon/10227521239804067/">
