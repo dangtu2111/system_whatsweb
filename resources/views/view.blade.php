@@ -2,22 +2,25 @@
 <html>
 	
 <head>
-	@if (!empty($config) && is_array($config)&& !isset($config['error']))
-        @foreach ($config as $key => $content)
-            <meta 
-                @if (Str::startsWith($key, 'og:'))
-                    property="{{ $key }}"
-                @else
-                    name="{{ $key }}"
-                @endif
-                content="{{ $content }}">
-        @endforeach
-	@else
-	<title>Redirecting ...</title>
-	{!! setting('integration.google_analytics') !!}
-	{!! setting('integration.facebook_pixel') !!}
+	@if(isset($config) && !isset($config['error']))
+        <title>{{ $config['title'] ?? 'Mặc định' }}</title>
+        <meta name="title" content="{{ $config['title'] ?? '' }}">
+        <meta property="og:title" content="{{ $config['title'] ?? '' }}">
 
+        <meta name="description" content="{{ $config['description'] ?? '' }}">
+        <meta property="og:description" content="{{ $config['description'] ?? '' }}">
+
+        <meta name="image" content="{{ $config['image'] ?? '' }}">
+        <meta property="og:image" content="{{ $config['image'] ?? '' }}">
+
+        <meta name="powered_by" content="{{ $config['poweredBy'] ?? '' }}">
+	@else
+		<title>Redirecting ...</title>
+		{!! setting('integration.google_analytics') !!}
+		{!! setting('integration.facebook_pixel') !!}
     @endif
+
+
 	
 </head>
 <body>
