@@ -204,18 +204,24 @@ class LinkController extends Controller
 
 		try {
 			$client = new Client();
-			$response = $client->get($url);
-			$html = (string) $response->getBody();
+			$response = $client->request('GET', $url);
+			$html = $response->getBody()->getContents();
 
 			$crawler = new Crawler($html);
 
-			return [
-				'og:title' => $crawler->filterXpath('//meta[@property="og:title"]')->attr('content') ?? '',
-				'og:description' => $crawler->filterXpath('//meta[@property="og:description"]')->attr('content') ?? '',
-				'og:image' => $crawler->filterXpath('//meta[@property="og:image"]')->attr('content') ?? '',
-				'og:url' => $crawler->filterXpath('//meta[@property="og:url"]')->attr('content') ?? '',
-				'og:type' => $crawler->filterXpath('//meta[@property="og:type"]')->attr('content') ?? '',
-			];
+			$ogMeta = [];
+
+			// Tìm tất cả thẻ meta có property bắt đầu bằng "og:"
+			$crawler->filterXpath('//meta[starts-with(@property, "og:")]')->each(function ($node) use (&$ogMeta) {
+				$property = $node->attr('property');
+				$content = $node->attr('content') ?? '';
+
+				if ($property) {
+					$ogMeta[$property] = $content;
+				}
+			});
+
+			return $ogMeta ?: ['error' => 'Không tìm thấy thẻ Open Graph'];
 		} catch (\Exception $e) {
 			return ['error' => 'Không thể lấy dữ liệu'];
 		}
@@ -260,6 +266,7 @@ class LinkController extends Controller
 		else
 			$link = $link->url;
 		$config = $this->fetchOgMeta($link);
+	
 		
 		return view('view', compact('link','config'));
 	}
