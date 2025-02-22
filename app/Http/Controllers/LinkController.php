@@ -10,10 +10,8 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Jenssegers\Agent\Agent;
 use Auth;
 use App\Exports\LinksExport;
-use Symfony\Component\Panther\Client;
-use Symfony\Component\DomCrawler\Crawler;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\Panther\PantherTestCase;
+use GuzzleHttp\Client;
 class LinkController extends Controller 
 {
 	public function index(Request $request) 
@@ -196,103 +194,120 @@ class LinkController extends Controller
 
 		return redirect()->back()->with('delete', true);
 	}
-	public function fetchAllMeta($url)
-	{
-		if (!filter_var($url, FILTER_VALIDATE_URL)) {
-			return ['error' => 'URL không hợp lệ'];
-		}
+	// public function fetchAllMeta($url)
+	// {
+	// 	if (!filter_var($url, FILTER_VALIDATE_URL)) {
+	// 		return ['error' => 'URL không hợp lệ'];
+	// 	}
 
-		try {
-			// Thêm User-Agent để tránh bị chặn
-			$client = new Client([
-				'headers' => [
-					'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-				]
-			]);
+	// 	try {
+	// 		// Thêm User-Agent để tránh bị chặn
+	// 		$client = new Client([
+	// 			'headers' => [
+	// 				'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+	// 			]
+	// 		]);
 	
-			$response = $client->request('GET', $url);
+	// 		$response = $client->request('GET', $url);
 			
-			// Kiểm tra nếu HTTP không phải 200
-			if ($response->getStatusCode() !== 200) {
-				return ['error' => 'Không thể lấy dữ liệu, HTTP Code: ' . $response->getStatusCode()];
-			}
+	// 		// Kiểm tra nếu HTTP không phải 200
+	// 		if ($response->getStatusCode() !== 200) {
+	// 			return ['error' => 'Không thể lấy dữ liệu, HTTP Code: ' . $response->getStatusCode()];
+	// 		}
 	
-			$html = $response->getBody()->getContents();
-			// Kiểm tra nếu HTML rỗng
-			if (empty($html)) {
-				return ['error' => 'HTML trả về rỗng! Có thể bị chặn.'];
-			}
+	// 		$html = $response->getBody()->getContents();
+	// 		// Kiểm tra nếu HTML rỗng
+	// 		if (empty($html)) {
+	// 			return ['error' => 'HTML trả về rỗng! Có thể bị chặn.'];
+	// 		}
 	
-			$crawler = new Crawler($html);
-			$headCrawler = $crawler->filter('head'); // Lấy phần <head>
-			$metaCrawler =$headCrawler->filter('meta');
+	// 		$crawler = new Crawler($html);
+	// 		$headCrawler = $crawler->filter('head'); // Lấy phần <head>
+	// 		$metaCrawler =$headCrawler->filter('meta');
 			
-			$metaTags = [];
+	// 		$metaTags = [];
 
-			// Lấy tất cả thẻ <meta> chỉ trong <head>
-			$metaCrawler->filterXpath('//meta')->each(function ($node) use (&$metaTags) {
-				$property = $node->attr('property') ?? $node->attr('name'); // Lấy cả "property" và "name"
-				$content = $node->attr('content') ?? '';
+	// 		// Lấy tất cả thẻ <meta> chỉ trong <head>
+	// 		$metaCrawler->filterXpath('//meta')->each(function ($node) use (&$metaTags) {
+	// 			$property = $node->attr('property') ?? $node->attr('name'); // Lấy cả "property" và "name"
+	// 			$content = $node->attr('content') ?? '';
 
-				if ($property) {
-					$metaTags[$property] = $content;
-				}
-			});
+	// 			if ($property) {
+	// 				$metaTags[$property] = $content;
+	// 			}
+	// 		});
 
-			return $metaTags ?: ['error' => 'Không tìm thấy thẻ meta'];
-		} catch (\Exception $e) {
-			return ['error' => 'Không thể lấy dữ liệu: ' . $e->getMessage()];
-		}
-	}
+	// 		return $metaTags ?: ['error' => 'Không tìm thấy thẻ meta'];
+	// 	} catch (\Exception $e) {
+	// 		return ['error' => 'Không thể lấy dữ liệu: ' . $e->getMessage()];
+	// 	}
+	// }
 
-	public function fetchFullPage( $url)
-    {
+	// public function fetchFullPage( $url)
+    // {
   
 
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            return ['error' => 'URL không hợp lệ'];
-        }
+    //     if (!filter_var($url, FILTER_VALIDATE_URL)) {
+    //         return ['error' => 'URL không hợp lệ'];
+    //     }
 
-        try {
-            $client = new Client();
-            $response = $client->get($url);
-            $html = (string) $response->getBody(); // Lấy toàn bộ HTML
+    //     try {
+    //         $client = new Client();
+    //         $response = $client->get($url);
+    //         $html = (string) $response->getBody(); // Lấy toàn bộ HTML
 
-            return ['html' => $html, 'url' => $url];
-        } catch (\Exception $e) {
-            return ['error' => 'Không thể lấy dữ liệu từ trang'];
-        }
-    }
+    //         return ['html' => $html, 'url' => $url];
+    //     } catch (\Exception $e) {
+    //         return ['error' => 'Không thể lấy dữ liệu từ trang'];
+    //     }
+    // }
+	// public function fetchMetaTags($url)
+	// {
+	// 	$chromeDriverPath = '/usr/bin/chromedriver'; // Đường dẫn đến ChromeDriver
+	// 	$chromeBinaryPath = '/usr/bin/google-chrome'; // Đường dẫn đến Google Chrome
+
+	// 	$client = Client::createChromeClient($chromeDriverPath, [
+	// 		'--headless=new',  // Chế độ headless mới
+	// 		'--disable-gpu',
+	// 		'--no-sandbox',
+	// 		'--disable-dev-shm-usage',
+	// 		'--remote-debugging-port=9222',
+	// 		"--browser-binary={$chromeBinaryPath}"
+	// 	]);
+
+	// 	$crawler = $client->request('GET', $url);
+	// 	$client->waitFor('meta');
+
+	// 	$metaTags = [];
+	// 	$crawler->filter('meta')->each(function ($node) use (&$metaTags) {
+	// 		$property = $node->attr('property') ?? $node->attr('name');
+	// 		$content = $node->attr('content') ?? '';
+
+	// 		if ($property) {
+	// 			$metaTags[$property] = $content;
+	// 		}
+	// 	});
+
+	// 	return $metaTags;
+	// }
 	public function fetchMetaTags($url)
-	{
-		$chromeDriverPath = '/usr/bin/chromedriver'; // Đường dẫn đến ChromeDriver
-		$chromeBinaryPath = '/usr/bin/google-chrome'; // Đường dẫn đến Google Chrome
+    {
+       
 
-		$client = Client::createChromeClient($chromeDriverPath, [
-			'--headless=new',  // Chế độ headless mới
-			'--disable-gpu',
-			'--no-sandbox',
-			'--disable-dev-shm-usage',
-			'--remote-debugging-port=9222',
-			"--browser-binary={$chromeBinaryPath}"
+        if (!$url) {
+            return view('meta_tags', ['error' => 'Missing URL parameter']);
+        }
+
+        $client = new Client();
+		$response = $client->get('https://api.dub.co/metatags', [
+			'query' => ['url' => $url]
 		]);
 
-		$crawler = $client->request('GET', $url);
-		$client->waitFor('meta');
+        // Lấy dữ liệu JSON
+        $metaTags =json_decode($response->getBody(), true);
 
-		$metaTags = [];
-		$crawler->filter('meta')->each(function ($node) use (&$metaTags) {
-			$property = $node->attr('property') ?? $node->attr('name');
-			$content = $node->attr('content') ?? '';
-
-			if ($property) {
-				$metaTags[$property] = $content;
-			}
-		});
-
-		return $metaTags;
-	}
-
+        return $metaTags;
+    }
 
 
 	public function slug($slug)
