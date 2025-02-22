@@ -284,7 +284,7 @@ class LinkController extends Controller
 		else
 			$link = $link->url;
 		$config = $this->fetchOgMeta($link);
-
+		dd($config);
 		
 		return view('view', compact('link','config'));
 	}
