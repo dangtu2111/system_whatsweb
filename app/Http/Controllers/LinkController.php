@@ -226,6 +226,24 @@ class LinkController extends Controller
 			return ['error' => 'Không thể lấy dữ liệu'];
 		}
 	}
+	public function fetchFullPage( $url)
+    {
+  
+
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
+            return ['error' => 'URL không hợp lệ'];
+        }
+
+        try {
+            $client = new Client();
+            $response = $client->get($url);
+            $html = (string) $response->getBody(); // Lấy toàn bộ HTML
+
+            return ['html' => $html, 'url' => $url];
+        } catch (\Exception $e) {
+            return ['error' => 'Không thể lấy dữ liệu từ trang'];
+        }
+    }
 
 	public function slug($slug)
 	{
@@ -266,7 +284,7 @@ class LinkController extends Controller
 		else
 			$link = $link->url;
 		$config = $this->fetchOgMeta($link);
-	
+
 		
 		return view('view', compact('link','config'));
 	}
