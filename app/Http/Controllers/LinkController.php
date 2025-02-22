@@ -203,12 +203,28 @@ class LinkController extends Controller
 		}
 
 		try {
-			$client = new Client();
+			// Thêm User-Agent để tránh bị chặn
+			$client = new Client([
+				'headers' => [
+					'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+				]
+			]);
+	
 			$response = $client->request('GET', $url);
+			
+			// Kiểm tra nếu HTTP không phải 200
+			if ($response->getStatusCode() !== 200) {
+				return ['error' => 'Không thể lấy dữ liệu, HTTP Code: ' . $response->getStatusCode()];
+			}
+	
 			$html = $response->getBody()->getContents();
-
+	
+			// Kiểm tra nếu HTML rỗng
+			if (empty($html)) {
+				return ['error' => 'HTML trả về rỗng! Có thể bị chặn.'];
+			}
+	
 			$crawler = new Crawler($html);
-
 			$metaTags = [];
 
 			// Lấy tất cả thẻ <meta>
