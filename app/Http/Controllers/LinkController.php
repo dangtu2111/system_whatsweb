@@ -265,25 +265,21 @@ class LinkController extends Controller
     }
 	public function fetchMetaTags($url)
 	{
-		// Khởi tạo trình duyệt headless
-		$client = Client::createChromeClient(null, [
-			'--headless',
+		$chromeDriverPath = '/usr/bin/chromedriver'; // Đường dẫn đến ChromeDriver
+		$chromeBinaryPath = '/usr/bin/google-chrome'; // Đường dẫn đến Google Chrome
+
+		$client = Client::createChromeClient($chromeDriverPath, [
+			'--headless=new',  // Chế độ headless mới
 			'--disable-gpu',
 			'--no-sandbox',
 			'--disable-dev-shm-usage',
-			'--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"'
+			'--remote-debugging-port=9222',
+			"--browser-binary={$chromeBinaryPath}"
 		]);
 
-		// Truy cập URL
 		$crawler = $client->request('GET', $url);
-
-		// Đợi trang tải xong
 		$client->waitFor('meta');
 
-		// Debug nếu không lấy được thẻ meta
-		file_put_contents('debug.html', $crawler->html());
-
-		// Lấy các thẻ meta
 		$metaTags = [];
 		$crawler->filter('meta')->each(function ($node) use (&$metaTags) {
 			$property = $node->attr('property') ?? $node->attr('name');
@@ -296,6 +292,7 @@ class LinkController extends Controller
 
 		return $metaTags;
 	}
+
 
 
 	public function slug($slug)
