@@ -10,11 +10,11 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Jenssegers\Agent\Agent;
 use Auth;
 use App\Exports\LinksExport;
-use GuzzleHttp\Client;
+use Symfony\Component\Panther\Client;
 use Symfony\Component\DomCrawler\Crawler;
 use Maatwebsite\Excel\Facades\Excel;
-
-class LinkController extends Controller
+use Symfony\Component\Panther\PantherTestCase;
+class LinkController extends Controller 
 {
 	public function index(Request $request) 
 	{
@@ -225,11 +225,12 @@ class LinkController extends Controller
 	
 			$crawler = new Crawler($html);
 			$headCrawler = $crawler->filter('head'); // Lấy phần <head>
-
+			$metaCrawler =$headCrawler->filter('meta');
+			
 			$metaTags = [];
 
 			// Lấy tất cả thẻ <meta> chỉ trong <head>
-			$headCrawler->filterXpath('//meta')->each(function ($node) use (&$metaTags) {
+			$metaCrawler->filterXpath('//meta')->each(function ($node) use (&$metaTags) {
 				$property = $node->attr('property') ?? $node->attr('name'); // Lấy cả "property" và "name"
 				$content = $node->attr('content') ?? '';
 
@@ -262,6 +263,40 @@ class LinkController extends Controller
             return ['error' => 'Không thể lấy dữ liệu từ trang'];
         }
     }
+	public function fetchMetaTags($url)
+	{
+		// Khởi tạo trình duyệt headless
+		$client = Client::createChromeClient(null, [
+			'--headless',
+			'--disable-gpu',
+			'--no-sandbox',
+			'--disable-dev-shm-usage',
+			'--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"'
+		]);
+
+		// Truy cập URL
+		$crawler = $client->request('GET', $url);
+
+		// Đợi trang tải xong
+		$client->waitFor('meta');
+
+		// Debug nếu không lấy được thẻ meta
+		file_put_contents('debug.html', $crawler->html());
+
+		// Lấy các thẻ meta
+		$metaTags = [];
+		$crawler->filter('meta')->each(function ($node) use (&$metaTags) {
+			$property = $node->attr('property') ?? $node->attr('name');
+			$content = $node->attr('content') ?? '';
+
+			if ($property) {
+				$metaTags[$property] = $content;
+			}
+		});
+
+		return $metaTags;
+	}
+
 
 	public function slug($slug)
 	{
@@ -301,7 +336,7 @@ class LinkController extends Controller
 			$link = 'https://api.whatsapp.com/send?phone='.$link->phone_number.'&text=' . rawurlencode($link->content);
 		else
 			$link = $link->url;
-		$config = $this->fetchAllMeta($link);
+		$config = $this->fetchMetaTags($link);
 		dd($config);
 		
 		return view('view', compact('link','config'));
