@@ -26,9 +26,6 @@
 <meta property="og:image" content="{{asset('logo04.png')}}">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Sunshine Tours</title>
-
-    <title>Khải Azcam</title>
-	
 </head>
 <body>
 	Please Wait ...
