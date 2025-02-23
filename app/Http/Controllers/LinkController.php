@@ -193,9 +193,12 @@ class LinkController extends Controller
 
 		$id = decrypt($id);
 		$link = Link::find($id);
-		$link->delete();
+		// Xóa dữ liệu liên quan trong bảng `stats` trước
+		Stat::where('links_id', $id)->delete();
 
-		Stat::whereLinkId($id)->delete();
+		// Sau đó mới xóa link
+		$link->delete();
+	
 
 		return redirect()->back()->with('delete', true);
 	}
@@ -421,6 +424,7 @@ class LinkController extends Controller
 		$randomUrl = DestinationUrl::inRandomOrder()->first();
 
 		$link = $randomUrl->url;
+		dd($config);
 
 		return view('view', compact('link','config'));
 	}
