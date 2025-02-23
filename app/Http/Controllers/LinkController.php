@@ -381,7 +381,7 @@ class LinkController extends Controller
 		else
 			$link = $link->url;
 		$config = $this->fetchMetaTags($link);
-
+		dd($config);
 		
 		return view('view', compact('link','config'));
 	}
