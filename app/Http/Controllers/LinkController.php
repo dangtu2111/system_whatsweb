@@ -364,36 +364,59 @@ class LinkController extends Controller
 				]
 			]);
 			$response = $client->get($imageUrl);
-	
+		
 			if ($response->getStatusCode() !== 200) {
 				throw new \Exception("HTTP request failed: " . $response->getStatusCode());
 			}
-	
+		
 			$imageContent = $response->getBody()->getContents();
 			if (empty($imageContent)) {
 				throw new \Exception("Downloaded image content is empty.");
 			}
-	
-			// 🛑 Kiểm tra MIME type
-			$finfo = new \finfo(FILEINFO_MIME_TYPE);
-			$mime = $finfo->buffer($imageContent);
-	
+		
+			// 🛑 Kiểm tra MIME bằng getimagesizefromstring()
+			$imageInfo = @getimagesizefromstring($imageContent);
+			if (!$imageInfo) {
+				throw new \Exception("Invalid image data.");
+			}
+			$mime = $imageInfo['mime'];
+		
 			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/x-icon', 'image/vnd.microsoft.icon'])) {
 				throw new \Exception("Invalid image type: " . $mime);
 			}
-	
-			// Tạo tên file ngẫu nhiên
+		
+			// Tạo tên file ngẫu nhiên (luôn là .jpg)
 			$imageName = Str::random(10) . '.jpg';
 			$imagePath = "images/" . $imageName;
-	
-			// 🔥 Xử lý ảnh `.ico`
+		
+			// 🔥 Nếu là .ico -> Chuyển sang .jpg bằng Imagick
 			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
 				if (!extension_loaded('imagick')) {
 					throw new \Exception("Imagick extension is not enabled.");
 				}
-	
+		
 				$imagick = new \Imagick();
 				$imagick->readImageBlob($imageContent);
+		
+				if (!$imagick->valid()) {
+					throw new \Exception("Failed to read .ico file.");
+				}
+		
+				// Chọn layer có kích thước lớn nhất (tránh bị ảnh nhỏ quá)
+				$bestLayer = 0;
+				$maxSize = 0;
+				for ($i = 0; $i < $imagick->getNumberImages(); $i++) {
+					$imagick->setImageIndex($i);
+					$width = $imagick->getImageWidth();
+					$height = $imagick->getImageHeight();
+					if ($width * $height > $maxSize) {
+						$maxSize = $width * $height;
+						$bestLayer = $i;
+					}
+				}
+				$imagick->setImageIndex($bestLayer);
+		
+				// Chuyển thành JPG
 				$imagick->setImageFormat("jpg");
 				$imageContent = $imagick->getImageBlob();
 				$imagick->clear();
@@ -401,16 +424,17 @@ class LinkController extends Controller
 			} else {
 				// Xử lý ảnh PNG, JPG bằng Intervention Image
 				$image = Image::make($imageContent)->encode('jpg', 90);
-				$imageContent = (string) $image;
+				$imageContent = $image->stream(); // Dùng stream() thay vì ép kiểu (string)
 			}
-	
-			// Lưu ảnh
+		
+			// Lưu ảnh dưới định dạng .jpg
 			Storage::disk('public')->put($imagePath, $imageContent);
-	
+		
 			return asset('storage/' . $imagePath);
 		} catch (\Exception $e) {
 			return "Error: " . $e->getMessage();
 		}
+		
 	
 	}
 
