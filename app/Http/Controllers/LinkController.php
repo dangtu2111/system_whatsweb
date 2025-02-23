@@ -375,7 +375,7 @@ class LinkController extends Controller
 				return asset('storage/' . $imagePath);
 			}
 		} catch (\Exception $e) {
-			
+			dd("Error: " . $e->getMessage());
 			return null;
 		}
 	
