@@ -17,28 +17,28 @@ use Illuminate\Support\Facades\Storage;
 use App\DestinationUrl;
 
 
-class LinkController extends Controller 
+class LinkController extends Controller
 {
-	public function index(Request $request) 
+	public function index(Request $request)
 	{
- 		$type = request()->type ?? '';
- 		$user = request()->user ?? '';
+		$type = request()->type ?? '';
+		$user = request()->user ?? '';
 		$links = Link::orderBy('created_at', 'desc');
 
-        if(user_member())
-            $links = $links->whereUserId(optional(user())->id);
+		if (user_member())
+			$links = $links->whereUserId(optional(user())->id);
 
-        if(is_backend() && $user)
-            $links = $links->whereUserId($user);
+		if (is_backend() && $user)
+			$links = $links->whereUserId($user);
 
-		if($type) {
+		if ($type) {
 			$links = $links->whereType($type);
 		}
 
-		if($request->is('*export*')) {
-			if(is_demo()) return abort(403);
+		if ($request->is('*export*')) {
+			if (is_demo()) return abort(403);
 
-	        return Excel::download(new LinksExport($links->get()), 'links.' . $request->format ?? 'xlsx', constant(sprintf('%s::%s', \Maatwebsite\Excel\Excel::class, strtoupper($request->format ?? 'xlsx'))));
+			return Excel::download(new LinksExport($links->get()), 'links.' . $request->format ?? 'xlsx', constant(sprintf('%s::%s', \Maatwebsite\Excel\Excel::class, strtoupper($request->format ?? 'xlsx'))));
 		}
 
 		$links = $links->paginate(10);
@@ -60,8 +60,8 @@ class LinkController extends Controller
 
 	public function edit($id)
 	{
-		if(is_demo()) return abort(403);
-		
+		if (is_demo()) return abort(403);
+
 		$id = decrypt($id);
 		$link = Link::find($id);
 
@@ -70,35 +70,37 @@ class LinkController extends Controller
 		return view('links.create', compact('link', 'id', 'title'));
 	}
 
-	public function create() 
+	public function create()
 	{
 		$title = 'Create New Link';
 		return view('links.create', compact('title'));
 	}
 
-	private function _validator($request, $id=false, $adds=false, $excepts=false) {
+	private function _validator($request, $id = false, $adds = false, $excepts = false)
+	{
 		$id = ',' . $id ?? '';
 
 		$validate = [
 			'phone_code' => 'required',
 			'phone_number' => 'required|min:8|max:30',
 			'content' => 'required',
-			'slug' => 'nullable|unique:links,slug'.$id.'|min:'.setting('features.custom_slug_min').'|max:' . setting('features.custom_slug_max')
+			'slug' => 'nullable|unique:links,slug' . $id . '|min:' . setting('features.custom_slug_min') . '|max:' . setting('features.custom_slug_max')
 		];
-		if($adds && is_array($adds)) {
+		if ($adds && is_array($adds)) {
 			$validate += $adds;
 		}
-		if($excepts && is_array($excepts)) {
+		if ($excepts && is_array($excepts)) {
 			$validate = array_except($validate, $excepts);
 		}
 		return $this->validate($request, $validate);
 	}
 
-	public function update(Request $request, $id) {
-		if(is_demo()) return abort(403);
+	public function update(Request $request, $id)
+	{
+		if (is_demo()) return abort(403);
 
 		$id = decrypt($id);
-		if($request->type == 'WHATSAPP')
+		if ($request->type == 'WHATSAPP')
 			$this->_validator($request, $id);
 		else
 			$this->_validator($request, $id, [
@@ -118,9 +120,9 @@ class LinkController extends Controller
 		], 200);
 	}
 
-	public function store(Request $request) 
+	public function store(Request $request)
 	{
-		if($request->type == 'WHATSAPP')
+		if ($request->type == 'WHATSAPP')
 			$this->_validator($request);
 		else
 			$this->_validator($request, false, [
@@ -130,17 +132,22 @@ class LinkController extends Controller
 		$phone_number = $request->phone_code . $request->phone_number;
 		$slug = str_random(setting('features.custom_slug_max'));
 
-		if(setting('features.custom_slug')) {
-			if(isset($request->slug) && trim($request->slug)) {
+		if (setting('features.custom_slug')) {
+			if (isset($request->slug) && trim($request->slug)) {
 				$slug = $request->slug;
 			}
 		}
-
+		$url = $request->url;
+		$content = NULL;
+		// Kiểm tra nếu URL là hình ảnh
+		if ($this->isValidImageUrl($url)) {
+			$content = $this->downloadImage($url);
+		}
 		$link = Link::create([
 			'phone_code' => $request->phone_code ?? NULL,
 			'phone_number' => $phone_number ?? NULL,
 			'slug' => $slug,
-			'content' => $request->content ?? NULL,
+			'content' => $content ?? NULL,
 			'user_id' => optional(user())->id ?? NULL,
 			'type' => $request->type ?? 'WHATSAPP',
 			'url' => $request->url ?? NULL
@@ -154,10 +161,10 @@ class LinkController extends Controller
 		], 200);
 	}
 
-	private function _result($slug, $type='WHATSAPP') 
+	private function _result($slug, $type = 'WHATSAPP')
 	{
 		$link['generated_link'] = url($slug);
-		$link['html_link'] = '<a href="' . url($slug) . '" target="_blank"><img src="'. media(setting('features.'.strtolower($type)).'_button_image') .'" alt="'. setting('features.'.strtolower($type).'_button_alt') .'"></a>';
+		$link['html_link'] = '<a href="' . url($slug) . '" target="_blank"><img src="' . media(setting('features.' . strtolower($type)) . '_button_image') . '" alt="' . setting('features.' . strtolower($type) . '_button_alt') . '"></a>';
 		$link['qrcode'] = route('qrcode', [$slug]);
 		$link['qrcode_save'] = route('qrcode', [$slug, 'save']);
 		$link['share_facebook'] = 'https://facebook.com/share.php?u=' . url($slug);
@@ -168,18 +175,19 @@ class LinkController extends Controller
 		return $link;
 	}
 
-	public function qrcode($id, $action=false) {		
+	public function qrcode($id, $action = false)
+	{
 		$link = Link::whereSlug($id)->first();
-		if(!isset($link)) {
+		if (!isset($link)) {
 			return abort(404);
 		}
 
 		$response = QrCode::format('png')->margin(1)->size(setting('features.qr_code_size'));
-		if($action == 'save') {
+		if ($action == 'save') {
 			$response = $response->generate(route('slug', [$link->slug]), storage_path('media/' . $link->slug . '.png'));
 			$response = response()
-						->download(storage_path('media/' . $link->slug . '.png'))->deleteFileAfterSend(true);
-		}else{
+				->download(storage_path('media/' . $link->slug . '.png'))->deleteFileAfterSend(true);
+		} else {
 			$response = response($response->generate(route('slug', [$link->slug])));
 			$response = $response->header('Content-Type', 'image/png');
 		}
@@ -189,7 +197,7 @@ class LinkController extends Controller
 
 	public function destroy($id)
 	{
-		if(is_demo()) return abort(403);
+		if (is_demo()) return abort(403);
 
 		$id = decrypt($id);
 		$link = Link::find($id);
@@ -198,7 +206,7 @@ class LinkController extends Controller
 
 		// Sau đó mới xóa link
 		$link->delete();
-	
+
 
 		return redirect()->back()->with('delete', true);
 	}
@@ -215,24 +223,24 @@ class LinkController extends Controller
 	// 				'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 	// 			]
 	// 		]);
-	
+
 	// 		$response = $client->request('GET', $url);
-			
+
 	// 		// Kiểm tra nếu HTTP không phải 200
 	// 		if ($response->getStatusCode() !== 200) {
 	// 			return ['error' => 'Không thể lấy dữ liệu, HTTP Code: ' . $response->getStatusCode()];
 	// 		}
-	
+
 	// 		$html = $response->getBody()->getContents();
 	// 		// Kiểm tra nếu HTML rỗng
 	// 		if (empty($html)) {
 	// 			return ['error' => 'HTML trả về rỗng! Có thể bị chặn.'];
 	// 		}
-	
+
 	// 		$crawler = new Crawler($html);
 	// 		$headCrawler = $crawler->filter('head'); // Lấy phần <head>
 	// 		$metaCrawler =$headCrawler->filter('meta');
-			
+
 	// 		$metaTags = [];
 
 	// 		// Lấy tất cả thẻ <meta> chỉ trong <head>
@@ -252,23 +260,23 @@ class LinkController extends Controller
 	// }
 
 	// public function fetchFullPage( $url)
-    // {
-  
+	// {
 
-    //     if (!filter_var($url, FILTER_VALIDATE_URL)) {
-    //         return ['error' => 'URL không hợp lệ'];
-    //     }
 
-    //     try {
-    //         $client = new Client();
-    //         $response = $client->get($url);
-    //         $html = (string) $response->getBody(); // Lấy toàn bộ HTML
+	//     if (!filter_var($url, FILTER_VALIDATE_URL)) {
+	//         return ['error' => 'URL không hợp lệ'];
+	//     }
 
-    //         return ['html' => $html, 'url' => $url];
-    //     } catch (\Exception $e) {
-    //         return ['error' => 'Không thể lấy dữ liệu từ trang'];
-    //     }
-    // }
+	//     try {
+	//         $client = new Client();
+	//         $response = $client->get($url);
+	//         $html = (string) $response->getBody(); // Lấy toàn bộ HTML
+
+	//         return ['html' => $html, 'url' => $url];
+	//     } catch (\Exception $e) {
+	//         return ['error' => 'Không thể lấy dữ liệu từ trang'];
+	//     }
+	// }
 	// public function fetchMetaTags($url)
 	// {
 	// 	$chromeDriverPath = '/usr/bin/chromedriver'; // Đường dẫn đến ChromeDriver
@@ -312,7 +320,7 @@ class LinkController extends Controller
 		// Lấy dữ liệu JSON
 		$metaTags = json_decode($response->getBody(), true);
 
-		
+
 
 		return $metaTags;
 	}
@@ -372,7 +380,7 @@ class LinkController extends Controller
 	{
 		$link = Link::whereSlug($slug)->first();
 
-		if(!isset($link)) return abort(404);
+		if (!isset($link)) return abort(404);
 
 		$link->update([
 			'hit' => $link->hit + 1
@@ -389,9 +397,7 @@ class LinkController extends Controller
 			'user_agent' => request()->server('HTTP_USER_AGENT'),
 			'referer' => request()->server('HTTP_REFERER'),
 			'device' => (
-				$agent->isMobile() ? 'MOBILE' : 
-				($agent->isTablet() ? 'TABLET' : 
-				($agent->isDesktop() ? 'DESKTOP' : ''))
+				$agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : ($agent->isDesktop() ? 'DESKTOP' : ''))
 			),
 
 			'device_name' => $agent->device(),
@@ -402,29 +408,22 @@ class LinkController extends Controller
 		];
 		Stat::create($stat);
 
-		if($link->type == 'WHATSAPP')
-			$link = 'https://api.whatsapp.com/send?phone='.$link->phone_number.'&text=' . rawurlencode($link->content);
+		if ($link->type == 'WHATSAPP')
+			$link = 'https://api.whatsapp.com/send?phone=' . $link->phone_number . '&text=' . rawurlencode($link->content);
 		else
 			$link_url = $link->url;
 		$config = $this->fetchMetaTags($link_url);
-		
-		// Kiểm tra nếu URL là hình ảnh
-		if ($this->isValidImageUrl($link_url)) {
-			if(!$link->content){
-				$config['image'] = $this->downloadImage($link_url);
-				if ($config['image']) {
-					// Cập nhật vào database
-					$link->update(['content' => $config['image']]);
-				}
-			}else{
-				$config['image'] =$link->content;
-			}
-			
+
+
+		if ($link->content != NULL) {
+			$config['image'] = $link->content;
 		}
+
+
 		$randomUrl = DestinationUrl::inRandomOrder()->first();
 
 		$link = $randomUrl->url;
-		
-		return view('view', compact('link','config'));
+
+		return view('view', compact('link', 'config'));
 	}
 }
