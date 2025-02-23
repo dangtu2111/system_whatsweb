@@ -28,10 +28,10 @@
 </head>
 <body>
 	Please Wait ...
-	<!-- <script>
+	<script>
 		setTimeout(function() {
 			document.location = '{!! $link !!}';
-		}, 3000);
-	</script> -->
+		}, 500);
+	</script>
 </body>
 </html>

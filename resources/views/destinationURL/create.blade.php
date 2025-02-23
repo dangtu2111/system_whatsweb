@@ -10,7 +10,7 @@
 		@if(is_backend())
 		<div class="section-header">
 			<div class="section-header-back">
-				<a href="{{ route_type('links.index') }}" class="btn"><i class="fas fa-chevron-left"></i></a>
+				<a href="{{ route_type('destination_url.index') }}" class="btn"><i class="fas fa-chevron-left"></i></a>
 			</div>
 			<h1>{!! $title !!}</h1>
 		</div>
@@ -24,7 +24,7 @@
 						<h4>{!! $title !!}</h4>
 					</div>
 					<div class="card-body">
-						@include('parts.links.fields')
+						@include('parts.destinationURL.fields')
 					</div>
 				</div>
 			</div>
@@ -33,7 +33,7 @@
 		@endif
 	</section>
 
-	@include('parts.links.modal')
+	@include('parts.destinationURL.modal')
 @stop
 
 @section('plugins_js')
@@ -45,7 +45,7 @@
 
 @section('scripts')
 <script>
-@include('parts.links.fields_js')
-@include('parts.links.modal_js')
+@include('parts.destinationURL.fields_js')
+@include('parts.destinationURL.modal_js')
 </script>
 @stop

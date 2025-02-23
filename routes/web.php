@@ -26,9 +26,9 @@ Route::group(['prefix' => config('whatsweb.backend'), 'middleware' => ['auth', '
 	Route::resource('links', 'LinkController')->except(['show']);
 	Route::post('links/show', 'LinkController@show')->name('links.show');
 	
-	Route::get('destination_url/export', 'DestinationURLController@index')->name('destinationURL.export');
+	Route::get('destination_url/export', 'DestinationURLController@index')->name('destination_url.export');
 	Route::resource('destination_url', 'DestinationURLController')->except(['show']);
-	Route::post('destination_url/show', 'DestinationURLController@show')->name('destinationURL.show');
+	Route::post('destination_url/show', 'DestinationURLController@show')->name('destination_url.show');
 
 	Route::get('reports', 'ReportController@index')->name('reports.index');
 	Route::resource('settings', 'SettingController');
@@ -54,14 +54,14 @@ Route::group([
 	Route::delete('/links/{id}/destroy', 'LinkController@destroy')->name('dashboard.links.destroy');
 
 	// //Destination URL
-	// Route::get('/destination_url', 'DestinationURLController@index')->name('dashboard.destinationURL.index');
-	// Route::get('/destination_url/create', 'DestinationURLController@create')->name('dashboard.destinationURL.create');
-	// Route::get('/destinationURL/{id}/edit', 'DestinationURLController@edit')->name('dashboard.destinationURL.edit');
-	// Route::post('/destination_url/create', 'DestinationURLController@store')->name('dashboard.destinationURL.store');
-	// Route::post('/destination_url/show', 'DestinationURLController@show')->name('dashboard.destinationURL.show');
-	// Route::put('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
-	// Route::patch('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
-	// Route::delete('/destination_url/{id}/destroy', 'DestinationURLController@destroy')->name('dashboard.destinationURL.destroy');
+	Route::get('/destination_url', 'DestinationURLController@index')->name('dashboard.destinationURL.index');
+	Route::get('/destination_url/create', 'DestinationURLController@create')->name('dashboard.destinationURL.create');
+	Route::get('/destinationURL/{id}/edit', 'DestinationURLController@edit')->name('dashboard.destinationURL.edit');
+	Route::post('/destination_url/create', 'DestinationURLController@store')->name('dashboard.destinationURL.store');
+	Route::post('/destination_url/show', 'DestinationURLController@show')->name('dashboard.destinationURL.show');
+	Route::put('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
+	Route::patch('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
+	Route::delete('/destination_url/{id}/destroy', 'DestinationURLController@destroy')->name('dashboard.destinationURL.destroy');
 	// Report
 	Route::get('reports', 'ReportController@index')->name('dashboard.reports.index');
 

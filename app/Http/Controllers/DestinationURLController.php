@@ -43,7 +43,7 @@ class DestinationURLController extends Controller
 	public function show(Request $request)
 	{
 		$id = decrypt($request->id);
-		$link = Link::find($id);
+		$link = DestinationUrl::find($id);
 
 		$link = $this->_result($link->slug, $link->type);
 
@@ -58,17 +58,17 @@ class DestinationURLController extends Controller
 		if(is_demo()) return abort(403);
 		
 		$id = decrypt($id);
-		$link = Link::find($id);
+		$link = DestinationUrl::find($id);
 
 		$id = encrypt($id);
 		$title = 'Edit Link';
-		return view('links.create', compact('link', 'id', 'title'));
+		return view('destinationURL.create', compact('link', 'id', 'title'));
 	}
 
 	public function create() 
 	{
 		$title = 'Create New Link';
-		return view('links.create', compact('title'));
+		return view('destinationURL.create', compact('title'));
 	}
 
 	private function _validator($request, $id=false, $adds=false, $excepts=false) {
@@ -100,7 +100,7 @@ class DestinationURLController extends Controller
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
 
-		$link = Link::find($id);
+		$link = DestinationUrl::find($id);
 
 		$input = $request->all();
 		$link->update($input);
@@ -123,25 +123,25 @@ class DestinationURLController extends Controller
 			], ['phone_code', 'phone_number', 'content']);
 
 		$phone_number = $request->phone_code . $request->phone_number;
-		$slug = str_random(setting('features.custom_slug_max'));
+		// $slug = str_random(setting('features.custom_slug_max'));
 
-		if(setting('features.custom_slug')) {
-			if(isset($request->slug) && trim($request->slug)) {
-				$slug = $request->slug;
-			}
-		}
+		// if(setting('features.custom_slug')) {
+		// 	if(isset($request->slug) && trim($request->slug)) {
+		// 		$slug = $request->slug;
+		// 	}
+		// }
 
-		$link = Link::create([
+		$link = DestinationUrl::create([
 			'phone_code' => $request->phone_code ?? NULL,
 			'phone_number' => $phone_number ?? NULL,
-			'slug' => $slug,
+			'slug' => $request->url ?? NULL,//$slug,
 			'content' => $request->content ?? NULL,
 			'user_id' => optional(user())->id ?? NULL,
 			'type' => $request->type ?? 'WHATSAPP',
 			'url' => $request->url ?? NULL
 		]);
 
-		$link = $this->_result($slug, $link->type);
+		$link = $this->_result($request->url ?? NULL, $link->type);
 
 		return response([
 			'success' => true,
@@ -164,7 +164,7 @@ class DestinationURLController extends Controller
 	}
 
 	public function qrcode($id, $action=false) {		
-		$link = Link::whereSlug($id)->first();
+		$link = DestinationUrl::whereSlug($id)->first();
 		if(!isset($link)) {
 			return abort(404);
 		}
@@ -187,7 +187,7 @@ class DestinationURLController extends Controller
 		if(is_demo()) return abort(403);
 
 		$id = decrypt($id);
-		$link = Link::find($id);
+		$link = DestinationUrl::find($id);
 		$link->delete();
 
 		Stat::whereLinkId($id)->delete();
@@ -312,7 +312,7 @@ class DestinationURLController extends Controller
 
 	public function slug($slug)
 	{
-		$link = Link::whereSlug($slug)->first();
+		$link = DestinationUrl::whereSlug($slug)->first();
 
 		if(!isset($link)) return abort(404);
 

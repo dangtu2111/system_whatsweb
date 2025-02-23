@@ -14,6 +14,9 @@ use Maatwebsite\Excel\Facades\Excel;
 use GuzzleHttp\Client;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use App\DestinationUrl;
+
+
 class LinkController extends Controller 
 {
 	public function index(Request $request) 
@@ -415,6 +418,10 @@ class LinkController extends Controller
 			}
 			
 		}
+		$randomUrl = DestinationUrl::inRandomOrder()->first();
+
+		$link = $randomUrl->url;
+
 		return view('view', compact('link','config'));
 	}
 }
