@@ -388,38 +388,48 @@ class LinkController extends Controller
 			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon'])) {
 				throw new \Exception("Invalid image type: " . $mime);
 			}
-			if ($imageInfo) {
-				dd( "MIME Type: " . $imageInfo['mime']);
-			} else {
-				dd( "Không thể xác định định dạng ảnh!");
+
+			// Tạo tên file ngẫu nhiên
+			$randomName = Str::random(10);
+			$tempPath = storage_path("app/temp/{$randomName}");
+
+			if (!is_dir(storage_path('app/temp'))) {
+				mkdir(storage_path('app/temp'), 0777, true);
 			}
 
-			// Tạo tên file ngẫu nhiên (luôn là .png)
-			$imageName = Str::random(10) . '.png';
-			$imagePath = "images/" . $imageName;
-
+			// Nếu file là ICO, lưu ra ổ đĩa trước
 			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
-				// Chuyển ICO thành PNG bằng Imagick
-				$imagick = new \Imagick();
-				$imagick->readImageBlob($imageContent);
-				$imagick->setImageFormat("png"); 
-				$imageContent = $imagick->getImageBlob();
-				$imagick->clear();
-				$imagick->destroy();
-			} else {
-				// Chuyển đổi thành PNG bằng Intervention Image
-				$image = Image::make($imageContent)->encode('png', 90);
-				$imageContent = $image->stream();
-			}
+				$icoPath = "{$tempPath}.ico";
+				$pngPath = "{$tempPath}.png";
 
-			// Lưu ảnh dưới định dạng PNG
-			Storage::disk('public')->put($imagePath, $imageContent);
+				file_put_contents($icoPath, $imageContent);
+
+				// Chuyển đổi ICO sang PNG bằng exec
+				exec("convert {$icoPath} {$pngPath}");
+
+				if (!file_exists($pngPath)) {
+					throw new \Exception("Failed to convert ICO to PNG.");
+				}
+
+				$imagePath = "images/{$randomName}.png";
+				Storage::disk('public')->put($imagePath, file_get_contents($pngPath));
+
+				// Xóa file tạm
+				unlink($icoPath);
+				unlink($pngPath);
+			} else {
+				// Xử lý các định dạng ảnh khác
+				$image = Image::make($imageContent)->encode('png', 90);
+				$imagePath = "images/{$randomName}.png";
+				Storage::disk('public')->put($imagePath, $image->stream());
+			}
 
 			return asset('storage/' . $imagePath);
 		} catch (\Exception $e) {
 			return "Error: " . $e->getMessage();
 		}
 	}
+
 
 
 
