@@ -355,47 +355,55 @@ class LinkController extends Controller
 		}
 	}
 	private function downloadImage($imageUrl)
-{
-    try {
-        $client = new Client();
-        $response = $client->get($imageUrl);
-
-        if ($response->getStatusCode() !== 200) {
-            dd("Request failed: " . $response->getStatusCode());
-        }
-
-        $imageContent = $response->getBody()->getContents();
-
-        // 🛑 Kiểm tra nội dung tải về
-        if (empty($imageContent)) {
-            dd("Empty image content!");
-        }
-
-        // Ghi dữ liệu ảnh vào file để kiểm tra
-        Storage::disk('public')->put('debug_image.jpg', $imageContent);
-        dd(asset('storage/debug_image.jpg')); // Mở URL này để kiểm tra
-
-        // 🛑 Thử tạo ảnh từ nội dung tải về
-        try {
-            $image = Image::make($imageContent);
-        } catch (\Exception $e) {
-            dd("Invalid image data: " . $e->getMessage());
-        }
-
-        // Chỉ chấp nhận PNG hoặc JPG
-        $format = in_array($image->mime(), ['image/png', 'image/jpeg']) ? 'jpg' : 'png';
-        $imageName = Str::random(10) . '.' . $format;
-        $imagePath = "images/" . $imageName;
-
-        // Lưu ảnh
-        Storage::disk('public')->put($imagePath, (string) $image->encode($format, 90));
-
-        return asset('storage/' . $imagePath);
-    } catch (\Exception $e) {
-        return "Error: " . $e->getMessage();
-    }
-}
-
+	{
+		try {
+			$client = new Client();
+			$response = $client->get($imageUrl);
+	
+			if ($response->getStatusCode() !== 200) {
+				throw new \Exception("HTTP request failed: " . $response->getStatusCode());
+			}
+	
+			$imageContent = $response->getBody()->getContents();
+	
+			// 🛑 Kiểm tra dữ liệu ảnh có rỗng không
+			if (empty($imageContent)) {
+				throw new \Exception("Empty image content!");
+			}
+	
+			// 🛑 Thử tạo ảnh từ nội dung tải về
+			try {
+				$image = Image::make($imageContent);
+			} catch (\Exception $e) {
+				throw new \Exception("Invalid image data: " . $e->getMessage());
+			}
+	
+			// 🛑 Lấy đúng mime type của ảnh
+			$mime = $image->mime();
+			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg'])) {
+				throw new \Exception("Unsupported image type: " . $mime);
+			}
+	
+			// Chỉ hỗ trợ PNG và JPG
+			$format = $mime === 'image/png' ? 'png' : 'jpg';
+	
+			// Tạo tên file ngẫu nhiên
+			$imageName = Str::random(10) . '.' . $format;
+			$imagePath = "images/" . $imageName;
+	
+			// 🛑 Kiểm tra thư mục tồn tại trước khi lưu
+			if (!Storage::disk('public')->exists('images')) {
+				Storage::disk('public')->makeDirectory('images');
+			}
+	
+			// Lưu ảnh
+			Storage::disk('public')->put($imagePath, (string) $image->encode($format, 90));
+	
+			return asset('storage/' . $imagePath);
+		} catch (\Exception $e) {
+			return "Error: " . $e->getMessage();
+		}
+	}
 
 
 	public function slug($slug)
