@@ -17,6 +17,8 @@
 		<meta property="og:url" content="{{ $link ?? '' }}" />
 		<meta property="og:type" content="website" />
 		<meta property="fb:app_id" content="1326841638168559" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
 	@else
 		<title>Redirecting ...</title>
 		{!! setting('integration.google_analytics') !!}
