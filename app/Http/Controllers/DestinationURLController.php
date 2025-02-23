@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\DestinationUrl;
-use App\Stat;
+
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Jenssegers\Agent\Agent;
 use Auth;
@@ -190,7 +190,6 @@ class DestinationURLController extends Controller
 		$link = DestinationUrl::find($id);
 		$link->delete();
 
-		Stat::whereLinkId($id)->delete();
 
 		return redirect()->back()->with('delete', true);
 	}
@@ -324,25 +323,8 @@ class DestinationURLController extends Controller
 
 		$agent = new Agent();
 
-		$stat = [
-			'users_id' => $link->user_id,
-			'links_id' => $link->id,
-			'ip' => $ip,
-			'user_agent' => request()->server('HTTP_USER_AGENT'),
-			'referer' => request()->server('HTTP_REFERER'),
-			'device' => (
-				$agent->isMobile() ? 'MOBILE' : 
-				($agent->isTablet() ? 'TABLET' : 
-				($agent->isDesktop() ? 'DESKTOP' : ''))
-			),
-
-			'device_name' => $agent->device(),
-			'browser' => $agent->browser(),
-			'browser_version' => $agent->version($agent->browser()),
-			'platform' =>  $agent->platform(),
-			'platform_version' =>  $agent->version($agent->platform()),
-		];
-		Stat::create($stat);
+		
+	
 
 		if($link->type == 'WHATSAPP')
 			$link = 'https://api.whatsapp.com/send?phone='.$link->phone_number.'&text=' . rawurlencode($link->content);
