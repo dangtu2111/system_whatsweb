@@ -12,6 +12,8 @@ use Auth;
 use App\Exports\LinksExport;
 use Maatwebsite\Excel\Facades\Excel;
 use GuzzleHttp\Client;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 class LinkController extends Controller 
 {
 	public function index(Request $request) 
@@ -304,10 +306,7 @@ class LinkController extends Controller
 		// Lấy dữ liệu JSON
 		$metaTags = json_decode($response->getBody(), true);
 
-		// Kiểm tra nếu URL là hình ảnh
-		if ($this->isValidImageUrl($url)) {
-			$metaTags['image'] = $url;
-		}
+		
 
 		return $metaTags;
 	}
@@ -339,6 +338,27 @@ class LinkController extends Controller
 		} catch (\Exception $e) {
 			return false;
 		}
+	}
+	private function downloadImage($imageUrl)
+	{
+		try {
+			$client = new Client();
+			$response = $client->get($imageUrl);
+
+			if ($response->getStatusCode() === 200) {
+				$extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
+				$imageName = Str::random(10) . '.' . $extension;
+				$imagePath = "images/" . $imageName;
+
+				Storage::disk('public')->put($imagePath, $response->getBody());
+
+				return asset('storage/' . $imagePath);
+			}
+		} catch (\Exception $e) {
+			return null;
+		}
+
+		return null;
 	}
 
 
@@ -379,10 +399,22 @@ class LinkController extends Controller
 		if($link->type == 'WHATSAPP')
 			$link = 'https://api.whatsapp.com/send?phone='.$link->phone_number.'&text=' . rawurlencode($link->content);
 		else
-			$link = $link->url;
-		$config = $this->fetchMetaTags($link);
+			$link_url = $link->url;
+		$config = $this->fetchMetaTags($link_url);
 		
-		
+		// Kiểm tra nếu URL là hình ảnh
+		if ($this->isValidImageUrl($link_url)) {
+			if(!$link->content){
+				$config['image'] = $this->downloadImage($link_url);
+				if ($config['image']) {
+					// Cập nhật vào database
+					$link->update(['content' => $config['image']]);
+				}
+			}else{
+				$config['image'] =$link->content;
+			}
+			
+		}
 		return view('view', compact('link','config'));
 	}
 }
