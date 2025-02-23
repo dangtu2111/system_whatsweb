@@ -392,9 +392,9 @@ class LinkController extends Controller
 			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
 				
 				$imagick = new \Imagick();
-				dd("ok");
+		
 				$imagick->readImageBlob($imageContent);
-				
+				dd("ok");
 				$imagick->setImageFormat("png");  // Chuyển ICO thành PNG
 				$imageContent = $imagick->getImageBlob();
 				$imagick->clear();
