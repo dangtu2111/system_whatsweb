@@ -15,7 +15,7 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\DestinationUrl;
-
+use Intervention\Image\Facades\Image;
 
 class LinkController extends Controller
 {
@@ -142,6 +142,7 @@ class LinkController extends Controller
 		// Kiểm tra nếu URL là hình ảnh
 		if ($this->isValidImageUrl($url)) {
 			$content = $this->downloadImage($url);
+			
 		}
 		$link = Link::create([
 			'phone_code' => $request->phone_code ?? NULL,
@@ -358,20 +359,26 @@ class LinkController extends Controller
 		try {
 			$client = new Client();
 			$response = $client->get($imageUrl);
-
+	
 			if ($response->getStatusCode() === 200) {
-				$extension = pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION);
-				$imageName = Str::random(10) . '.' . $extension;
+				$imageContent = $response->getBody()->getContents();
+				$image = Image::make($imageContent);
+	
+				// Định dạng đích (chỉ PNG hoặc JPG)
+				$format = in_array($image->mime(), ['image/png', 'image/jpeg']) ? $image->extension : 'jpg';
+				$imageName = Str::random(10) . '.' . $format;
 				$imagePath = "images/" . $imageName;
-
-				Storage::disk('public')->put($imagePath, $response->getBody());
-
+	
+				// Lưu ảnh với định dạng chuẩn
+				Storage::disk('public')->put($imagePath, (string) $image->encode($format, 90));
+	
 				return asset('storage/' . $imagePath);
 			}
 		} catch (\Exception $e) {
+			dd("Error: " . $e->getMessage());
 			return null;
 		}
-
+	
 		return null;
 	}
 
@@ -421,8 +428,13 @@ class LinkController extends Controller
 
 
 		$randomUrl = DestinationUrl::inRandomOrder()->first();
-
+		if ($this->isValidImageUrl($link_url)) {
+			$content = $this->downloadImage($link_url);
+			dd($content);
+			
+		}
 		$link = $randomUrl->url;
+		dd($config);
 		return view('view', compact('link', 'config'));
 	}
 }
