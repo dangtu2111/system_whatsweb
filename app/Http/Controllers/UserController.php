@@ -29,6 +29,10 @@ class UserController extends AppBaseController
      * @param Request $request
      * @return Response
      */
+    public function getUser(Request $request)
+    {
+        return response()->json($request->user());
+    }
     public function index(Request $request)
     {
         $this->userRepository->pushCriteria(new RequestCriteria($request));

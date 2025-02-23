@@ -8,9 +8,7 @@ return [
     'prefix' => 'midia',
 
     // 404
-    '404' => function() {
-    	return abort(404);
-    },
+    '404' => \Illuminate\Http\Response::HTTP_NOT_FOUND,
     
     // Multiple target directories
     'directories' => [

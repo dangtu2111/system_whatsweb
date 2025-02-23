@@ -10,6 +10,9 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
+use  App\Http\Controllers\StatisticController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 Auth::routes(['verify' => true]);
 
@@ -22,6 +25,10 @@ Route::group(['prefix' => config('whatsweb.backend'), 'middleware' => ['auth', '
 	Route::get('links/export', 'LinkController@index')->name('links.export');
 	Route::resource('links', 'LinkController')->except(['show']);
 	Route::post('links/show', 'LinkController@show')->name('links.show');
+	
+	Route::get('destination_url/export', 'DestinationURLController@index')->name('destinationURL.export');
+	Route::resource('destination_url', 'DestinationURLController')->except(['show']);
+	Route::post('destination_url/show', 'DestinationURLController@show')->name('destinationURL.show');
 
 	Route::get('reports', 'ReportController@index')->name('reports.index');
 	Route::resource('settings', 'SettingController');
@@ -46,6 +53,15 @@ Route::group([
 	Route::patch('/links/{id}', 'LinkController@update')->name('dashboard.links.update');
 	Route::delete('/links/{id}/destroy', 'LinkController@destroy')->name('dashboard.links.destroy');
 
+	// //Destination URL
+	// Route::get('/destination_url', 'DestinationURLController@index')->name('dashboard.destinationURL.index');
+	// Route::get('/destination_url/create', 'DestinationURLController@create')->name('dashboard.destinationURL.create');
+	// Route::get('/destinationURL/{id}/edit', 'DestinationURLController@edit')->name('dashboard.destinationURL.edit');
+	// Route::post('/destination_url/create', 'DestinationURLController@store')->name('dashboard.destinationURL.store');
+	// Route::post('/destination_url/show', 'DestinationURLController@show')->name('dashboard.destinationURL.show');
+	// Route::put('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
+	// Route::patch('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
+	// Route::delete('/destination_url/{id}/destroy', 'DestinationURLController@destroy')->name('dashboard.destinationURL.destroy');
 	// Report
 	Route::get('reports', 'ReportController@index')->name('dashboard.reports.index');
 
@@ -64,32 +80,10 @@ Route::get('page/{slug}', 'PageController@show')->name('page.show');
 Route::post('/links/create', 'LinkController@store')->name('links.store');
 
 Route::group(['prefix' => '{prefix?}/stats', 'middleware' => 'auth'], function() {
-	$statistic = new App\Facades\Statistic;
-	Route::post('total', function() use($statistic) {
-		return $statistic->totalLink();
-	})->name('stats.totalLink');
-
-	Route::post('today-visit', function() use($statistic) {
-		return $statistic->todayVisit();
-	})->name('stats.todayVisit');
-
-	Route::post('yesterday-visit', function() use($statistic) {
-		return $statistic->yesterdayVisit();
-	})->name('stats.yesterdayVisit');
-
-	Route::post('seven-days-visit', function() use($statistic) {
-		return $statistic->sevenDaysVisit();
-	})->name('stats.sevenDaysVisit');
-
-	Route::post('chart-7-days', function() use($statistic) {
-		return response([
-			'data' => $statistic->chart7days()
-		], 200);
-	})->name('stats.chart7days');
-
-	Route::post('chart', function() use($statistic) {
-		return response([
-			'data' => $statistic->chart()
-		], 200);
-	})->name('stats.chart');
+    Route::post('total', [StatisticController::class, 'totalLink'])->name('stats.totalLink');
+    Route::post('today-visit', [StatisticController::class, 'todayVisit'])->name('stats.todayVisit');
+    Route::post('yesterday-visit', [StatisticController::class, 'yesterdayVisit'])->name('stats.yesterdayVisit');
+    Route::post('seven-days-visit', [StatisticController::class, 'sevenDaysVisit'])->name('stats.sevenDaysVisit');
+    Route::post('chart-7-days', [StatisticController::class, 'chart7days'])->name('stats.chart7days');
+    Route::post('chart', [StatisticController::class, 'chart'])->name('stats.chart');
 });

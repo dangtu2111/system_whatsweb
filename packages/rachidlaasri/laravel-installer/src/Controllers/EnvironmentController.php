@@ -8,7 +8,6 @@ use Illuminate\Routing\Redirector;
 use RachidLaasri\LaravelInstaller\Helpers\EnvironmentManager;
 use RachidLaasri\LaravelInstaller\Events\EnvironmentSaved;
 use Validator;
-use Illuminate\Validation\Rule;
 
 class EnvironmentController extends Controller
 {

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Link;
+use App\DestinationUrl;
 use App\Stat;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Jenssegers\Agent\Agent;
@@ -12,13 +12,13 @@ use Auth;
 use App\Exports\LinksExport;
 use Maatwebsite\Excel\Facades\Excel;
 use GuzzleHttp\Client;
-class LinkController extends Controller 
+class DestinationURLController extends Controller 
 {
 	public function index(Request $request) 
 	{
  		$type = request()->type ?? '';
  		$user = request()->user ?? '';
-		$links = Link::orderBy('created_at', 'desc');
+		$links = DestinationUrl::orderBy('created_at', 'desc');
 
         if(user_member())
             $links = $links->whereUserId(optional(user())->id);
@@ -37,7 +37,7 @@ class LinkController extends Controller
 		}
 
 		$links = $links->paginate(10);
-		return view('links.index', compact('links', 'type'));
+		return view('destinationURL.index', compact('links', 'type'));
 	}
 
 	public function show(Request $request)
@@ -291,55 +291,23 @@ class LinkController extends Controller
 	// 	return $metaTags;
 	// }
 	public function fetchMetaTags($url)
-	{
-		if (!$url) {
-			return view('meta_tags', ['error' => 'Missing URL parameter']);
-		}
+    {
+       
 
-		$client = new Client();
+        if (!$url) {
+            return view('meta_tags', ['error' => 'Missing URL parameter']);
+        }
+
+        $client = new Client();
 		$response = $client->get('https://api.dub.co/metatags', [
 			'query' => ['url' => $url]
 		]);
 
-		// Lấy dữ liệu JSON
-		$metaTags = json_decode($response->getBody(), true);
+        // Lấy dữ liệu JSON
+        $metaTags =json_decode($response->getBody(), true);
 
-		// Kiểm tra nếu URL là hình ảnh
-		if ($this->isValidImageUrl($url)) {
-			$metaTags['image'] = $url;
-		}
-
-		return $metaTags;
-	}
-
-	// Hàm kiểm tra URL có phải là hình ảnh không
-	private function isValidImageUrl($url)
-	{
-		return $this->isImageUrl($url) || $this->isImageContentType($url);
-	}
-
-	// Kiểm tra bằng đuôi file
-	private function isImageUrl($url)
-	{
-		$imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico'];
-		$pathInfo = pathinfo(parse_url($url, PHP_URL_PATH));
-
-		return isset($pathInfo['extension']) && in_array(strtolower($pathInfo['extension']), $imageExtensions);
-	}
-
-	// Kiểm tra bằng HTTP request
-	private function isImageContentType($url)
-	{
-		try {
-			$client = new Client();
-			$response = $client->head($url, ['timeout' => 5]);
-
-			$contentType = $response->getHeaderLine('Content-Type');
-			return str_starts_with($contentType, 'image/');
-		} catch (\Exception $e) {
-			return false;
-		}
-	}
+        return $metaTags;
+    }
 
 
 	public function slug($slug)
