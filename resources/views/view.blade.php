@@ -3,22 +3,13 @@
 	
 <head>
 	@if(isset($config) && !isset($config['error']))
-        <title>{{ $config['title'] ?? 'Mặc định' }}</title>
-        <meta name="title" content="{{ $config['title'] ?? '' }}">
-        <meta property="og:title" content="{{ $config['title'] ?? '' }}">
+	<meta property="og:url" content="https://www.invicti.com/blog/web-security/using-google-bots-attack-vector/" />
 
-        <meta name="description" content="{{ $config['description'] ?? '' }}">
-        <meta property="og:description" content="{{ $config['description'] ?? '' }}">
+<meta property="og:description" content="This article examines the latest attack vector to surface: using Google Bots." />
 
-        <meta name="image" content="{{ $config['image'] ?? '' }}">
-        <meta property="og:image" content="{{ $config['image'] ?? '' }}">
-
-        <meta name="powered_by" content="{{ $config['poweredBy'] ?? '' }}">
-		<link rel="canonical" href="https://www.youtube.com/watch?v=5CmeV_BciKo" />
-		<meta property="og:type" content="website" />
-		<meta property="fb:app_id" content="1326841638168559" />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="630" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Using Google Bots as an Attack Vector" />
+<meta property="og:image" content="https://cdn.invicti.com/statics/img/ogimage/Using-Google-Bots-as-an-Attack-Vector.png" />
 	@else
 		<title>Redirecting ...</title>
 		{!! setting('integration.google_analytics') !!}
