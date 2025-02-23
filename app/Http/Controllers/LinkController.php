@@ -386,17 +386,18 @@ class LinkController extends Controller
 			$imageName = Str::random(10) . '.jpg';
 			$imagePath = "images/" . $imageName;
 	
-			// Nếu là .ico, chuyển thành JPG
+			// 🔥 Xử lý ảnh `.ico`
 			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
-				// Kiểm tra dữ liệu trước khi chuyển đổi
-				$icoImage = @imagecreatefromstring($imageContent);
-				if (!$icoImage) {
-					throw new \Exception("Failed to convert .ico to jpg. Possibly corrupted or unsupported .ico format.");
+				if (!extension_loaded('imagick')) {
+					throw new \Exception("Imagick extension is not enabled.");
 				}
-				ob_start();
-				imagejpeg($icoImage, null, 90); // Chuyển ICO sang JPG với chất lượng 90%
-				$imageContent = ob_get_clean();
-				imagedestroy($icoImage);
+	
+				$imagick = new \Imagick();
+				$imagick->readImageBlob($imageContent);
+				$imagick->setImageFormat("jpg");
+				$imageContent = $imagick->getImageBlob();
+				$imagick->clear();
+				$imagick->destroy();
 			} else {
 				// Xử lý ảnh PNG, JPG bằng Intervention Image
 				$image = Image::make($imageContent)->encode('jpg', 90);
