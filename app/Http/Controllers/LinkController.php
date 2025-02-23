@@ -388,6 +388,11 @@ class LinkController extends Controller
 			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon'])) {
 				throw new \Exception("Invalid image type: " . $mime);
 			}
+			if ($imageInfo) {
+				dd( "MIME Type: " . $imageInfo['mime']);
+			} else {
+				dd( "Không thể xác định định dạng ảnh!");
+			}
 
 			// Tạo tên file ngẫu nhiên (luôn là .png)
 			$imageName = Str::random(10) . '.png';
