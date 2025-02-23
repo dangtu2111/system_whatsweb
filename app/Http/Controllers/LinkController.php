@@ -424,8 +424,7 @@ class LinkController extends Controller
 		$randomUrl = DestinationUrl::inRandomOrder()->first();
 
 		$link = $randomUrl->url;
-		dd($config);
-
+		
 		return view('view', compact('link','config'));
 	}
 }
