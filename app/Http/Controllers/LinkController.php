@@ -370,8 +370,11 @@ class LinkController extends Controller
 			}
 	
 			$imageContent = $response->getBody()->getContents();
+			if (empty($imageContent)) {
+				throw new \Exception("Downloaded image content is empty.");
+			}
 	
-			// 🛑 Kiểm tra mime type
+			// 🛑 Kiểm tra MIME type
 			$finfo = new \finfo(FILEINFO_MIME_TYPE);
 			$mime = $finfo->buffer($imageContent);
 	
@@ -385,9 +388,10 @@ class LinkController extends Controller
 	
 			// Nếu là .ico, chuyển thành JPG
 			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
-				$icoImage = imagecreatefromstring($imageContent);
+				// Kiểm tra dữ liệu trước khi chuyển đổi
+				$icoImage = @imagecreatefromstring($imageContent);
 				if (!$icoImage) {
-					throw new \Exception("Failed to convert .ico to jpg");
+					throw new \Exception("Failed to convert .ico to jpg. Possibly corrupted or unsupported .ico format.");
 				}
 				ob_start();
 				imagejpeg($icoImage, null, 90); // Chuyển ICO sang JPG với chất lượng 90%
