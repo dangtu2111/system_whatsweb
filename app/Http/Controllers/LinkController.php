@@ -354,6 +354,8 @@ class LinkController extends Controller
 			return false;
 		}
 	}
+	
+
 	private function downloadImage($imageUrl)
 	{
 		try {
@@ -363,60 +365,57 @@ class LinkController extends Controller
 					'Accept' => 'image/png, image/jpeg, image/jpg, image/webp, image/x-icon, image/vnd.microsoft.icon, image/*',
 				]
 			]);
+
 			$response = $client->get($imageUrl);
-		
+
 			if ($response->getStatusCode() !== 200) {
 				throw new \Exception("HTTP request failed: " . $response->getStatusCode());
 			}
-		
+
 			$imageContent = $response->getBody()->getContents();
 			if (empty($imageContent)) {
 				throw new \Exception("Downloaded image content is empty.");
 			}
-		
-			// 🛑 Kiểm tra MIME bằng getimagesizefromstring()
+
+			// Kiểm tra MIME
 			$imageInfo = @getimagesizefromstring($imageContent);
 			if (!$imageInfo) {
 				throw new \Exception("Invalid image data.");
 			}
+
 			$mime = $imageInfo['mime'];
-		
-			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/x-icon', 'image/vnd.microsoft.icon'])) {
+
+			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/x-icon', 'image/vnd.microsoft.icon'])) {
 				throw new \Exception("Invalid image type: " . $mime);
 			}
-		
-			// Tạo tên file ngẫu nhiên (luôn là .jpg)
-			$imageName = Str::random(10) . '.jpg';
-			$imagePath = "images/" . $imageName;
-		
-			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
-				
-				$imagick = new \Imagick();
-				print_r(\Imagick::queryFormats());
 
+			// Tạo tên file ngẫu nhiên (luôn là .png)
+			$imageName = Str::random(10) . '.png';
+			$imagePath = "images/" . $imageName;
+
+			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
+				// Chuyển ICO thành PNG bằng Imagick
+				$imagick = new \Imagick();
 				$imagick->readImageBlob($imageContent);
-				dd("ok");
-				$imagick->setImageFormat("png");  // Chuyển ICO thành PNG
+				$imagick->setImageFormat("png"); 
 				$imageContent = $imagick->getImageBlob();
 				$imagick->clear();
 				$imagick->destroy();
-			
 			} else {
-				// Xử lý ảnh PNG, JPG bằng Intervention Image
-				$image = Image::make($imageContent)->encode('jpg', 90);
-				$imageContent = $image->stream(); // Dùng stream() thay vì ép kiểu (string)
+				// Chuyển đổi thành PNG bằng Intervention Image
+				$image = Image::make($imageContent)->encode('png', 90);
+				$imageContent = $image->stream();
 			}
-		
-			// Lưu ảnh dưới định dạng .jpg
+
+			// Lưu ảnh dưới định dạng PNG
 			Storage::disk('public')->put($imagePath, $imageContent);
-		
+
 			return asset('storage/' . $imagePath);
 		} catch (\Exception $e) {
 			return "Error: " . $e->getMessage();
 		}
-		
-	
 	}
+
 
 
 	public function slug($slug)
