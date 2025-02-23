@@ -357,7 +357,12 @@ class LinkController extends Controller
 	private function downloadImage($imageUrl)
 	{
 		try {
-			$client = new Client();
+			$client = new Client([
+				'headers' => [
+					'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+					'Accept' => 'image/png, image/jpeg, image/jpg, image/webp, image/x-icon, image/*',
+				]
+			]);
 			$response = $client->get($imageUrl);
 	
 			if ($response->getStatusCode() !== 200) {
@@ -366,38 +371,36 @@ class LinkController extends Controller
 	
 			$imageContent = $response->getBody()->getContents();
 	
-			// 🛑 Kiểm tra dữ liệu ảnh có rỗng không
-			if (empty($imageContent)) {
-				throw new \Exception("Empty image content!");
-			}
+			// 🛑 Kiểm tra mime type
+			$finfo = new \finfo(FILEINFO_MIME_TYPE);
+			$mime = $finfo->buffer($imageContent);
 	
-			// 🛑 Thử tạo ảnh từ nội dung tải về
-			try {
-				$image = Image::make($imageContent);
-			} catch (\Exception $e) {
-				throw new \Exception("Invalid image data: " . $e->getMessage());
+			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/x-icon'])) {
+				throw new \Exception("Invalid image type: " . $mime);
 			}
-	
-			// 🛑 Lấy đúng mime type của ảnh
-			$mime = $image->mime();
-			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg'])) {
-				throw new \Exception("Unsupported image type: " . $mime);
-			}
-	
-			// Chỉ hỗ trợ PNG và JPG
-			$format = $mime === 'image/png' ? 'png' : 'jpg';
 	
 			// Tạo tên file ngẫu nhiên
-			$imageName = Str::random(10) . '.' . $format;
+			$imageName = Str::random(10) . '.jpg';
 			$imagePath = "images/" . $imageName;
 	
-			// 🛑 Kiểm tra thư mục tồn tại trước khi lưu
-			if (!Storage::disk('public')->exists('images')) {
-				Storage::disk('public')->makeDirectory('images');
+			// Nếu là .ico, chuyển thành JPG
+			if ($mime === 'image/x-icon') {
+				$icoImage = imagecreatefromstring($imageContent);
+				if (!$icoImage) {
+					throw new \Exception("Failed to convert .ico to jpg");
+				}
+				ob_start();
+				imagejpeg($icoImage, null, 90); // Chuyển ICO sang JPG với chất lượng 90%
+				$imageContent = ob_get_clean();
+				imagedestroy($icoImage);
+			} else {
+				// Xử lý ảnh PNG, JPG bằng Intervention Image
+				$image = Image::make($imageContent)->encode('jpg', 90);
+				$imageContent = (string) $image;
 			}
 	
 			// Lưu ảnh
-			Storage::disk('public')->put($imagePath, (string) $image->encode($format, 90));
+			Storage::disk('public')->put($imagePath, $imageContent);
 	
 			return asset('storage/' . $imagePath);
 		} catch (\Exception $e) {
