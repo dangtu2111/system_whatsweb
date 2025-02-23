@@ -14,6 +14,9 @@
         <meta property="og:image" content="{{ $config['image'] ?? '' }}">
 
         <meta name="powered_by" content="{{ $config['poweredBy'] ?? '' }}">
+		<meta property="og:url" content="{{ $config['url'] ?? '' }}" />
+		<meta property="og:type" content="website" />
+		<meta property="fb:app_id" content="1326841638168559" />
 	@else
 		<title>Redirecting ...</title>
 		{!! setting('integration.google_analytics') !!}
