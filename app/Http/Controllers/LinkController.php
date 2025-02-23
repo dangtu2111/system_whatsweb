@@ -389,38 +389,14 @@ class LinkController extends Controller
 			$imageName = Str::random(10) . '.jpg';
 			$imagePath = "images/" . $imageName;
 		
-			// 🔥 Nếu là .ico -> Chuyển sang .jpg bằng Imagick
 			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
-				if (!extension_loaded('imagick')) {
-					throw new \Exception("Imagick extension is not enabled.");
-				}
-		
 				$imagick = new \Imagick();
 				$imagick->readImageBlob($imageContent);
-		
-				if (!$imagick->valid()) {
-					throw new \Exception("Failed to read .ico file.");
-				}
-		
-				// Chọn layer có kích thước lớn nhất (tránh bị ảnh nhỏ quá)
-				$bestLayer = 0;
-				$maxSize = 0;
-				for ($i = 0; $i < $imagick->getNumberImages(); $i++) {
-					$imagick->setImageIndex($i);
-					$width = $imagick->getImageWidth();
-					$height = $imagick->getImageHeight();
-					if ($width * $height > $maxSize) {
-						$maxSize = $width * $height;
-						$bestLayer = $i;
-					}
-				}
-				$imagick->setImageIndex($bestLayer);
-		
-				// Chuyển thành JPG
-				$imagick->setImageFormat("jpg");
+				$imagick->setImageFormat("png");  // Chuyển ICO thành PNG
 				$imageContent = $imagick->getImageBlob();
 				$imagick->clear();
 				$imagick->destroy();
+			
 			} else {
 				// Xử lý ảnh PNG, JPG bằng Intervention Image
 				$image = Image::make($imageContent)->encode('jpg', 90);
