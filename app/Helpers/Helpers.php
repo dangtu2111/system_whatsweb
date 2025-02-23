@@ -277,10 +277,10 @@ function is_dashboard($path, $yes) {
 
 function link_types() {
 	return [
-		'WHATSAPP' => [
-			'text' => 'WhatsApp',
-			'icon' => 'fab fa-whatsapp'
-		],
+		// 'WHATSAPP' => [
+		// 	'text' => 'WhatsApp',
+		// 	'icon' => 'fab fa-whatsapp'
+		// ],
 		'SHORTLINK' => [
 			'text' => 'Shortlink',
 			'icon' => 'fas fa-link'
