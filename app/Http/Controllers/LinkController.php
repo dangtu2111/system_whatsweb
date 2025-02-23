@@ -360,7 +360,7 @@ class LinkController extends Controller
 			$client = new Client([
 				'headers' => [
 					'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-					'Accept' => 'image/png, image/jpeg, image/jpg, image/webp, image/x-icon, image/*',
+					'Accept' => 'image/png, image/jpeg, image/jpg, image/webp, image/x-icon, image/vnd.microsoft.icon, image/*',
 				]
 			]);
 			$response = $client->get($imageUrl);
@@ -375,7 +375,7 @@ class LinkController extends Controller
 			$finfo = new \finfo(FILEINFO_MIME_TYPE);
 			$mime = $finfo->buffer($imageContent);
 	
-			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/x-icon'])) {
+			if (!in_array($mime, ['image/png', 'image/jpeg', 'image/jpg', 'image/x-icon', 'image/vnd.microsoft.icon'])) {
 				throw new \Exception("Invalid image type: " . $mime);
 			}
 	
@@ -384,7 +384,7 @@ class LinkController extends Controller
 			$imagePath = "images/" . $imageName;
 	
 			// Nếu là .ico, chuyển thành JPG
-			if ($mime === 'image/x-icon') {
+			if (in_array($mime, ['image/x-icon', 'image/vnd.microsoft.icon'])) {
 				$icoImage = imagecreatefromstring($imageContent);
 				if (!$icoImage) {
 					throw new \Exception("Failed to convert .ico to jpg");
@@ -406,6 +406,7 @@ class LinkController extends Controller
 		} catch (\Exception $e) {
 			return "Error: " . $e->getMessage();
 		}
+	
 	}
 
 
