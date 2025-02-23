@@ -38,7 +38,7 @@
 											<i class="fas fa-list"></i> All Links
 										</a>
 									</li>
-									@foreach(link_types() as $t => $link)
+									@foreach(destinationURL_type() as $t => $link)
 									<li class="nav-item">
 										<a class="nav-link has-icon{{$t == $type ? ' active' : ''}}" href="{{ route_type('destination_url.index',['type' => $t]) }}">
 											<i class="{{ $link['icon'] }}"></i>
@@ -79,7 +79,7 @@
 											<i class="fas fa-link"></i> Create New Link
 										</a>
 										<div class="dropdown-menu">
-											@foreach(link_types() as $t => $link)
+											@foreach(destinationURL_type() as $t => $link)
 											<a href="{{route_type('destination_url.create', ['type' => $t])}}" class="dropdown-item">{{ $link['text'] }}</a>
 											@endforeach
 										</div>										
@@ -110,7 +110,7 @@
 											@endif
 											<td>{!! $link->phone_number == '' ? '-' : $link->phone_number !!}</td>
 											<td>{!! $link->hit !!}</td>
-											<td>{!! link_types()[$link->type]['text'] !!}</td>
+											<td>{!! destinationURL_type()[$link->type]['text'] !!}</td>
 											<td>{!! $link->created_at->diffForHumans() !!}</td>
 											<td>
 												<a href="#" data-id="{{ $id }}" class="btn btn-primary btn-sm view-link">View</a>

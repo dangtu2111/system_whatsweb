@@ -288,6 +288,15 @@ function link_types() {
 	];
 }
 
+function destinationURL_type() {
+	return [
+		'SHORTLINK' => [
+			'text' => 'Shortlink',
+			'icon' => 'fas fa-link'
+		]
+	];
+}
+
 function media($path) {
 	return url('media/' . $path ?? '');
 }
