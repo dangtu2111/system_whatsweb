@@ -142,7 +142,6 @@ class LinkController extends Controller
 		// Kiểm tra nếu URL là hình ảnh
 		if ($this->isValidImageUrl($url)) {
 			$content = $this->downloadImage($url);
-			
 		}
 		$link = Link::create([
 			'phone_code' => $request->phone_code ?? NULL,
