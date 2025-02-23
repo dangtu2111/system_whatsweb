@@ -478,13 +478,9 @@ class LinkController extends Controller
 
 
 		$randomUrl = DestinationUrl::inRandomOrder()->first();
-		if ($this->isValidImageUrl($link_url)) {
-			$content = $this->downloadImage($link_url);
-			dd($content);
-			
-		}
+		
 		$link = $randomUrl->url;
-		dd($config);
+
 		return view('view', compact('link', 'config'));
 	}
 }
