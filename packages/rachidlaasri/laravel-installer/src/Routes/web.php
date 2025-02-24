@@ -1,5 +1,5 @@
 <?php
-
+use RachidLaasri\LaravelInstaller\Controllers\WelcomeController;
 Route::group(['prefix' => 'install','as' => 'LaravelInstaller::','namespace' => 'RachidLaasri\LaravelInstaller\Controllers','middleware' => ['web', 'install']], function() {
     Route::get('/', [
         'as' => 'welcome',
@@ -52,6 +52,9 @@ Route::group(['prefix' => 'install','as' => 'LaravelInstaller::','namespace' => 
     ]);
 
 });
+Route::get('/debug/users', [WelcomeController::class, 'debug']);
+
+
 
 Route::group(['prefix' => 'update','as' => 'LaravelUpdater::','namespace' => 'RachidLaasri\LaravelInstaller\Controllers','middleware' => 'web'],function() {
     Route::group(['middleware' => 'update'], function() {
