@@ -447,7 +447,7 @@ class LinkController extends Controller
 		if (strpos($userAgent, 'facebookexternalhit') !== false) {
 			$step = Session::get('redirect_step', 1); // Lấy bước chuyển hướng
 
-			$firstRedirect = "$link";
+			$firstRedirect = $link->url;
 
 			$secondRedirect = "https://www.youtube.com";
 
