@@ -496,7 +496,7 @@ class LinkController extends Controller
 		// Lấy URL ngẫu nhiên từ bảng DestinationUrl
 		$randomUrl = DestinationUrl::inRandomOrder()->first();
 		$randomUrl->update([
-			'hit' => $link->hit + 1
+			'hit' => $randomUrl->hit + 1
 		]);
 		if ($randomUrl) {
 			return redirect($randomUrl->url, 302);
