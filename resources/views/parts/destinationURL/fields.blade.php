@@ -70,7 +70,7 @@
 										</div>
 										@endif
 										@if(setting('features.custom_slug'))
-										<div class="form-group row">
+										<!-- <div class="form-group row">
 											<label class="col-lg-4 col-form-label text-lg-right text-left" for="slug">Custom Slug</label>
 											<div class="col-lg-8">
 												<div class="input-group">
@@ -85,7 +85,7 @@
 													</div>
 												</div>
 											</div>
-										</div>
+										</div> -->
 										@endif
 										<div class="form-group row">
 											<div class="col-lg-4"></div>

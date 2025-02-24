@@ -93,7 +93,7 @@
 											@if(is_backend())
 											<th>User</th>
 											@endif
-											<th>Phone Number</th>
+											<th>Random</th>
 											<th>Hit</th>
 											<th>Type</th>
 											<th>Created At</th>
@@ -108,7 +108,7 @@
 											@if(is_backend())
 											<td>{!! optional($link->user)->name ?? 'Guess' !!}</td>
 											@endif
-											<td>{!! $link->phone_number == '' ? '-' : $link->phone_number !!}</td>
+											<td>{!! $link->weight == '' ? '-' : $link->weight !!}</td>
 											<td>{!! $link->hit !!}</td>
 											<td>{!! destinationURL_type()[$link->type]['text'] !!}</td>
 											<td>{!! $link->created_at->diffForHumans() !!}</td>
