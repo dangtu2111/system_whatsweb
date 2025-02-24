@@ -59,6 +59,15 @@
 											</div>
 										</div>
 									</div>
+									<div class="form-group row">
+										<label class="col-lg-4 col-form-label text-lg-right text-left" for="url">Name</label>
+										<div class="col-lg-8">
+											<input type="text" name="name_phone" class="form-control" id="url" value="{!! isset($link) ? optional($link)->phone_number : '' !!}">
+											<div class="form-text">
+												The name you want to give to the link
+											</div>
+										</div>
+									</div>
 									@endif
 									@if(setting('features.custom_slug'))
 									<div class="form-group row">

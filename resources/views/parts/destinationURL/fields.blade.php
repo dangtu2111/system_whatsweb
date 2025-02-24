@@ -59,6 +59,15 @@
 												</div>
 											</div>
 										</div>
+										<div class="form-group row">
+											<label class="col-lg-4 col-form-label text-lg-right text-left" for="url">Weight</label>
+											<div class="col-lg-8">
+												<input type="number" name="random" class="form-control" id="url" value="{!! isset($link) ? optional($link)->weight : '' !!}">
+												<div class="form-text">
+												The random rate you want to appear
+												</div>
+											</div>
+										</div>
 										@endif
 										@if(setting('features.custom_slug'))
 										<div class="form-group row">

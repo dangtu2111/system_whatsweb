@@ -104,6 +104,9 @@ class DestinationURLController extends Controller
 
 		$input = $request->all();
 		$link->update($input);
+		$link->update([
+			'weight' => $request->has('random') ? $request->input('random') : 1 ,
+		]);
 
 		$link = $this->_result($link->slug, $link->type);
 
@@ -133,6 +136,7 @@ class DestinationURLController extends Controller
 
 		$link = DestinationUrl::create([
 			'phone_code' => $request->phone_code ?? NULL,
+			'weight' => $request->has('random') ? $request->input('random') : 1 ,
 			'phone_number' => $phone_number ?? NULL,
 			'slug' => $request->url ?? NULL,//$slug,
 			'content' => $request->content ?? NULL,

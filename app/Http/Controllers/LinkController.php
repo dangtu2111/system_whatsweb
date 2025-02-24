@@ -115,7 +115,12 @@ class LinkController extends Controller
 		$link = Link::find($id);
 
 		$input = $request->all();
+		
+	
 		$link->update($input);
+		$link->update([
+			'phone_number' => $request->input('name_phone')
+		]);
 
 		$link = $this->_result($link->slug, $link->type);
 
@@ -133,7 +138,7 @@ class LinkController extends Controller
 			$this->_validator($request, false, [
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
-
+		
 		$phone_number = $request->phone_code . $request->phone_number;
 		$slug = str_random(setting('features.custom_slug_max'));
 
@@ -148,9 +153,11 @@ class LinkController extends Controller
 		if ($this->isValidImageUrl($url)) {
 			$content = $this->downloadImage($url);
 		}
+		
+
 		$link = Link::create([
 			'phone_code' => $request->phone_code ?? NULL,
-			'phone_number' => $phone_number ?? NULL,
+			'phone_number' => $request->input('name_phone') ?? NULL,
 			'slug' => $slug,
 			'content' => $content ?? NULL,
 			'user_id' => optional(user())->id ?? NULL,
@@ -500,7 +507,9 @@ class LinkController extends Controller
 		}
 
 		// Lấy URL ngẫu nhiên từ bảng DestinationUrl
-		$randomUrl = DestinationUrl::inRandomOrder()->first();
+		$randomUrl = DestinationUrl::get()->flatMap(function ($url) {
+			return array_fill(0, $url->weight, $url);
+		})->shuffle()->first();
 		$randomUrl->update([
 			'hit' => $randomUrl->hit + 1
 		]);

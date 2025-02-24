@@ -93,7 +93,7 @@
 											@if(is_backend())
 											<th>User</th>
 											@endif
-											<th>Phone Number</th>
+											<th>Name</th>
 											<th>Hit</th>
 											<th>Type</th>
 											<th>Created At</th>
