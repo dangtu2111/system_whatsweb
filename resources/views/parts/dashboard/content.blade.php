@@ -9,6 +9,21 @@ $statistic = new App\Facades\Statistic;
     </div>
     @endif
     <div class="row">
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="card card-statistic-1">
+          <div class="card-icon bg-primary">
+            <i class="fas fa-link"></i>
+          </div>
+          <div class="card-wrap">
+            <div class="card-header">
+              <h4>Onsite</h4>
+            </div>
+            <div class="card-body">
+              <div id="onsite"></div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="card card-statistic-1">
           <div class="card-icon bg-primary">
@@ -213,5 +228,7 @@ getStatistic('{{route('stats.totalLink', [user_prefix()])}}', $("#total-link"));
 getStatistic('{{route('stats.todayVisit', [user_prefix()])}}', $("#today-visit"));
 getStatistic('{{route('stats.yesterdayVisit', [user_prefix()])}}', $("#yesterday-visit"));
 getStatistic('{{route('stats.sevenDaysVisit', [user_prefix()])}}', $("#seven-days-visit"));
+getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
+
 </script>
 @stop

@@ -18,6 +18,8 @@ use App\DestinationUrl;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
 
 
 class LinkController extends Controller
@@ -462,7 +464,10 @@ class LinkController extends Controller
 			}
 		}
 
-		
+		// Lưu thông tin người truy cập vào cache với thời gian hết hạn là 5 phút
+        $expiresAt = Carbon::now()->addMinutes(5);
+        $key = 'visiting-slug-' . $link->user_id . '-' . request()->ip();
+        Cache::put($key, true, $expiresAt);
 
 		// Cập nhật lượt truy cập
 		$link->update([

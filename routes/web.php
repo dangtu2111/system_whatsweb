@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Request;
 use App\Http\Controllers\RedirectController;
-
 Auth::routes(['verify' => true]);
 
 Route::group(['prefix' => config('whatsweb.backend'), 'middleware' => ['auth', 'usertype:admin']], function() {
@@ -89,6 +88,8 @@ Route::group(['prefix' => '{prefix?}/stats', 'middleware' => 'auth'], function()
     Route::post('seven-days-visit', [StatisticController::class, 'sevenDaysVisit'])->name('stats.sevenDaysVisit');
     Route::post('chart-7-days', [StatisticController::class, 'chart7days'])->name('stats.chart7days');
     Route::post('chart', [StatisticController::class, 'chart'])->name('stats.chart');
+	// Thống kê số người đang truy cập
+    Route::post('active-visitors', [StatisticController::class, 'getActiveVisitors'])->name('stats.activeVisitors');
 });
 
-Route::get('/redirectaaaaaaaaaaaaaaaaaaaaaaaaaa', [RedirectController::class, 'redirect'])->name('redirect');
+
