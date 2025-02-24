@@ -164,8 +164,14 @@ class DomainController extends Controller
 				], ['phone_code', 'phone_number', 'content']);
 			}
 
+			$url = $request->input('url');
+
+			// Nếu thiếu "http://" hoặc "https://", thêm mặc định là "http://"
+			if (!preg_match('/^https?:\/\//', $url)) {
+				$url = 'http://' . $url;
+			}
 			// Lấy slug từ URL
-			$slug = parse_url($request->input('url'), PHP_URL_HOST);
+			$slug = preg_replace('/^www\./', '', parse_url($url, PHP_URL_HOST));
 
 			// Kiểm tra domain đã tồn tại chưa
 			if (Domain::where('slug', $slug)->exists()) {
@@ -175,6 +181,7 @@ class DomainController extends Controller
 					'error_code' => 1062 // Mã lỗi trùng khóa
 				], 400);
 			}
+			
 
 			// Tạo mới domain
 			$link = Domain::create([
