@@ -154,36 +154,68 @@ class DomainController extends Controller
 
 	public function store(Request $request) 
 	{
-		if($request->type == 'WHATSAPP')
-			$this->_validator($request);
-		else
-			$this->_validator($request, false, [
-				'url' => 'required'
-			], ['phone_code', 'phone_number', 'content']);
+		try {
+			// Validate request
+			if ($request->type == 'WHATSAPP') {
+				$this->_validator($request);
+			} else {
+				$this->_validator($request, false, [
+					'url' => 'required'
+				], ['phone_code', 'phone_number', 'content']);
+			}
 
-		
-		// $slug = str_random(setting('features.custom_slug_max'));
+			// Lấy slug từ URL
+			$slug = parse_url($request->input('url'), PHP_URL_HOST);
 
-		// if(setting('features.custom_slug')) {
-		// 	if(isset($request->slug) && trim($request->slug)) {
-		// 		$slug = $request->slug;
-		// 	}
-		// }
-        
-		$link = Domain::create([
-            'user_id' => optional(user())->id ?? NULL, // Hoặc null nếu không cần
-            'name' => $request->input('name_phone'),
-            'slug' => parse_url($request->input('url'), PHP_URL_HOST),
-            'is_active' => true
-        ]);
-        
+			// Kiểm tra domain đã tồn tại chưa
+			if (Domain::where('slug', $slug)->exists()) {
+				return response()->json([
+					'success' => false,
+					'message' => 'Domain này đã tồn tại!',
+					'error_code' => 1062 // Mã lỗi trùng khóa
+				], 400);
+			}
 
-		// $link = $this->_result($request->url ?? NULL, $link->type);
+			// Tạo mới domain
+			$link = Domain::create([
+				'user_id'   => optional(user())->id ?? null, 
+				'name'      => $request->input('name_phone'),
+				'slug'      => $slug,
+				'is_active' => true
+			]);
 
-		return response([
-			'success' => true,
-			'data' => $link
-		], 200);
+			// Kiểm tra nếu tạo thất bại
+			if (!$link) {
+				return response()->json([
+					'success' => false,
+					'message' => 'Không thể tạo mới domain. Vui lòng thử lại!'
+				], 400);
+			}
+
+			return response()->json([
+				'success' => true,
+				'data' => $link
+			], 200);
+
+		} catch (\Illuminate\Database\QueryException $e) {
+			if ($e->errorInfo[1] == 1062) { // Lỗi Duplicate entry
+				return response()->json([
+					'success' => false,
+					'message' => 'Domain này đã tồn tại!',
+					'error_code' => 1062
+				], 400);
+			}
+
+			return response()->json([
+				'success' => false,
+				'message' => 'Lỗi cơ sở dữ liệu: ' . $e->getMessage()
+			], 500);
+		} catch (\Exception $e) {
+			return response()->json([
+				'success' => false,
+				'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+			], 500);
+		}
 	}
 
 	private function _result($slug, $type='WHATSAPP') 

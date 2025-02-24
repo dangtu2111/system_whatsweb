@@ -36,6 +36,9 @@
         <li class="nav-item{{ is_dashboard('links*', ' active') }}">
           <a href="{{ route('dashboard.links.index') }}" class="nav-link"><i class="fas fa-link"></i><span>Links</span></a>
         </li>
+        <li class="nav-item{{ is_dashboard('domain*', ' active') }}">
+          <a href="{{ route('dashboard.domain.index') }}" class="nav-link"><i class="fas fa-link"></i><span>Domain</span></a>
+        </li>
         <li class="nav-item{{ is_dashboard('reports*', ' active') }}">
           <a href="{{ route('dashboard.reports.index') }}" class="nav-link"><i class="fas fa-chart-line"></i><span>Reports</span></a>
         </li>

@@ -113,14 +113,29 @@ $("#link-form").submit(function() {
 		result(res);
 	})
 	.catch(function(err) {
-		if(err.response.status == 422) {
-			let errors = err.response.data.errors,
-				first_key = Object.keys(errors)[0],
-				first_error = errors[first_key][0];
+		console.error("Lỗi API:", err); // In toàn bộ lỗi ra console để debug
 
-			swal('Aw! You missed something.', first_error, 'error');
-		}else{
-			swal('Aw! There is something went wrong.', 'Please check your internet connection or contact administration.', 'error');
+		if (err.response) {
+			let errorMessage = err.response.data.message || "Đã xảy ra lỗi không xác định!";
+			
+			// Lỗi 422: Validation
+			if (err.response.status == 422) {
+				let errors = err.response.data.errors;
+				if (errors) {
+					let firstKey = Object.keys(errors)[0];
+					errorMessage = errors[firstKey][0]; // Lấy lỗi đầu tiên từ danh sách
+				}
+			} 
+			// Lỗi trùng dữ liệu (Duplicate entry)
+			else if (err.response.data.message.includes("Duplicate entry")) {
+				errorMessage = "Lỗi! Domain này đã tồn tại.";
+			}
+			
+			// Hiển thị thông báo lỗi
+			swal("Lỗi!", errorMessage, "error");
+		} else {
+			// Lỗi không kết nối được đến server
+			swal("Lỗi!", "Không thể kết nối đến server! Vui lòng kiểm tra kết nối mạng.", "error");
 		}
 	})
 	.then(function() {

@@ -319,8 +319,9 @@ function user_type_html($type) {
 }
 
 function is_backend() {
-	return request()->is(config('whatsweb.backend') . '*');
+    return request()->is(config('whatsweb.backend') . '*');
 }
+
 
 function layout() {
 	if(is_backend()) return 'app';
