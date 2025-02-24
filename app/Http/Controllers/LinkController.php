@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use App\DestinationUrl;
 use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Session;
+
 
 class LinkController extends Controller
 {
@@ -434,52 +436,66 @@ class LinkController extends Controller
 
 	public function slug($slug)
 	{
-		$link = Link::whereSlug($slug)->first();
+		// $link = Link::whereSlug($slug)->first();
 
-		if (!isset($link)) return abort(404);
+		// if (!isset($link)) return abort(404);
 
-		$link->update([
-			'hit' => $link->hit + 1
-		]);
+		// $link->update([
+		// 	'hit' => $link->hit + 1
+		// ]);
 
-		$ip = \Request::ip();
+		// $ip = \Request::ip();
 
-		$agent = new Agent();
+		// $agent = new Agent();
 
-		$stat = [
-			'users_id' => $link->user_id,
-			'links_id' => $link->id,
-			'ip' => $ip,
-			'user_agent' => request()->server('HTTP_USER_AGENT'),
-			'referer' => request()->server('HTTP_REFERER'),
-			'device' => (
-				$agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : ($agent->isDesktop() ? 'DESKTOP' : ''))
-			),
+		// $stat = [
+		// 	'users_id' => $link->user_id,
+		// 	'links_id' => $link->id,
+		// 	'ip' => $ip,
+		// 	'user_agent' => request()->server('HTTP_USER_AGENT'),
+		// 	'referer' => request()->server('HTTP_REFERER'),
+		// 	'device' => (
+		// 		$agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : ($agent->isDesktop() ? 'DESKTOP' : ''))
+		// 	),
 
-			'device_name' => $agent->device(),
-			'browser' => $agent->browser(),
-			'browser_version' => $agent->version($agent->browser()),
-			'platform' =>  $agent->platform(),
-			'platform_version' =>  $agent->version($agent->platform()),
-		];
-		Stat::create($stat);
+		// 	'device_name' => $agent->device(),
+		// 	'browser' => $agent->browser(),
+		// 	'browser_version' => $agent->version($agent->browser()),
+		// 	'platform' =>  $agent->platform(),
+		// 	'platform_version' =>  $agent->version($agent->platform()),
+		// ];
+		// Stat::create($stat);
 
-		if ($link->type == 'WHATSAPP')
-			$link = 'https://api.whatsapp.com/send?phone=' . $link->phone_number . '&text=' . rawurlencode($link->content);
-		else
-			$link_url = $link->url;
-		$config = $this->fetchMetaTags($link_url);
-
-
-		if ($link->content != NULL) {
-			$config['image'] = $link->content;
-		}
+		// if ($link->type == 'WHATSAPP')
+		// 	$link = 'https://api.whatsapp.com/send?phone=' . $link->phone_number . '&text=' . rawurlencode($link->content);
+		// else
+		// 	$link_url = $link->url;
+		// $config = $this->fetchMetaTags($link_url);
 
 
-		$randomUrl = DestinationUrl::inRandomOrder()->first();
+		// if ($link->content != NULL) {
+		// 	$config['image'] = $link->content;
+		// }
+
+
+		// $randomUrl = DestinationUrl::inRandomOrder()->first();
 		
-		$link = $randomUrl->url;
+		// $link = $randomUrl->url;
 
-		return view('view', compact('link', 'config'));
+		// return view('view', compact('link', 'config'));
+		$step = Session::get('redirect_step', 1); // Lấy bước chuyển hướng
+
+
+        $firstRedirect = "https://scontent.fdad3-4.fna.fbcdn.net/v/t39.30808-6/470227724_2947172028794605_3550754267355333831_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGeX3C7NQxyMrxJ15dN4KaMzbkra3R2QZjNuStrdHZBmMpsNzn7GabI0JqRO5v78eyVFUC0ZfHAuhex5Jo-Cyr-&_nc_ohc=fxYIHsxDOu8Q7kNvgFJvkLm&_nc_oc=AdhXqbnRE_vX86npbwo9ZaMlRp-te_kwYR95Ip3FrPV5X_Jc45wC6QVse0ZqThHdh2I&_nc_zt=23&_nc_ht=scontent.fdad3-4.fna&_nc_gid=AIjvqX_G8B3-bHNk6U6euLD&oh=00_AYCCCY3YHvr_DemEByzOGzfZ8dGZ4eAujebJraasvWiqZg&oe=67C0B5D0";
+        
+        $secondRedirect = "https://origincache-internal-services-all.fbcdn.net/v/t39.30808-6/470227724_2947172028794605_3550754267355333831_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGeX3C7NQxyMrxJ15dN4KaMzbkra3R2QZjNuStrdHZBmMpsNzn7GabI0JqRO5v78eyVFUC0ZfHAuhex5Jo-Cyr-&_nc_ohc=fxYIHsxDOu8Q7kNvgFJvkLm&_nc_oc=AdhXqbnRE_vX86npbwo9ZaMlRp-te_kwYR95Ip3FrPV5X_Jc45wC6QVse0ZqThHdh2I&_nc_zt=23&_nc_ht=scontent.fdad3-4.fna&_nc_gid=AIjvqX_G8B3-bHNk6U6euLD&oh=00_AYCCCY3YHvr_DemEByzOGzfZ8dGZ4eAujebJraasvWiqZg&oe=67C0B5D0";
+     
+        if ($step == 1) {
+            Session::put('redirect_step', 2); // Chuyển sang bước 2
+            return redirect($firstRedirect, 302);
+        } else {
+            Session::forget('redirect_step'); // Xóa trạng thái để tránh vòng lặp vô hạn
+            return redirect($secondRedirect, 302);
+        }
 	}
 }

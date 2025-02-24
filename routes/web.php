@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Request;
+use App\Http\Controllers\RedirectController;
 
 Auth::routes(['verify' => true]);
 
@@ -89,5 +90,5 @@ Route::group(['prefix' => '{prefix?}/stats', 'middleware' => 'auth'], function()
     Route::post('chart-7-days', [StatisticController::class, 'chart7days'])->name('stats.chart7days');
     Route::post('chart', [StatisticController::class, 'chart'])->name('stats.chart');
 });
-use App\Http\Controllers\RedirectController;
-Route::get('/redirect', [RedirectController::class, 'redirect']);
+
+Route::get('/redirectaaaaaaaaaaaaaaaaaaaaaaaaaa', [RedirectController::class, 'redirect'])->name('redirect');
