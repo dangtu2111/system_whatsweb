@@ -37,4 +37,14 @@ class StatisticController extends Controller
     public function getActiveVisitors(Statistic $statistic) {
         return $statistic->getActiveVisitors();
     }
+    public function thisMonthVisit(Statistic $statistic)
+    {
+        return $statistic->thisMonthVisit();
+    }
+
+    public function lastMonthVisit(Statistic $statistic)
+    {
+        return $statistic->lastMonthVisit();
+    }
+
 }

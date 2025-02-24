@@ -90,6 +90,9 @@ Route::group(['prefix' => '{prefix?}/stats', 'middleware' => 'auth'], function()
     Route::post('chart', [StatisticController::class, 'chart'])->name('stats.chart');
 	// Thống kê số người đang truy cập
     Route::post('active-visitors', [StatisticController::class, 'getActiveVisitors'])->name('stats.activeVisitors');
+	Route::post('this-month', [StatisticController::class, 'thisMonthVisit'])->name('stats.thisMonthVisit');
+    // Thống kê lượt truy cập trong tháng trước
+    Route::post('last-month', [StatisticController::class, 'lastMonthVisit'])->name('stats.lastMonthVisit');
 });
 
 

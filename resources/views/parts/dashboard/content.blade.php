@@ -84,6 +84,36 @@ $statistic = new App\Facades\Statistic;
           </div>
         </div>
       </div>
+      <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="card card-statistic-1">
+          <div class="card-icon bg-success">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="card-wrap">
+            <div class="card-header">
+              <h4>This month</h4>
+            </div>
+            <div class="card-body">
+              <div id="this-month"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="card card-statistic-1">
+          <div class="card-icon bg-success">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="card-wrap">
+            <div class="card-header">
+              <h4>Last month</h4>
+            </div>
+            <div class="card-body">
+              <div id="last-month"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="row">
       <div class="col-lg-8">
@@ -229,6 +259,8 @@ getStatistic('{{route('stats.todayVisit', [user_prefix()])}}', $("#today-visit")
 getStatistic('{{route('stats.yesterdayVisit', [user_prefix()])}}', $("#yesterday-visit"));
 getStatistic('{{route('stats.sevenDaysVisit', [user_prefix()])}}', $("#seven-days-visit"));
 getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
+getStatistic('{{route('stats.thisMonthVisit', [user_prefix()])}}', $("#this-month"));
+getStatistic('{{route('stats.lastMonthVisit', [user_prefix()])}}', $("#last-month"));
 
 </script>
 @stop

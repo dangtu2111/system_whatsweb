@@ -155,6 +155,17 @@ class Statistic {
 
 		return count($activeVisitors);
 	}
-
+	public function thisMonthVisit() {
+		return $this->_dateVisit(stat_date('>=', Carbon::now()->startOfMonth()->format('Y-m-d')));
+	}
+	public function lastMonthVisit() {
+		$startOfLastMonth = Carbon::now()->subMonth()->startOfMonth()->format('Y-m-d');
+		$endOfLastMonth = Carbon::now()->subMonth()->endOfMonth()->format('Y-m-d');
+	
+		return $this->_dateVisit("BETWEEN '$startOfLastMonth' AND '$endOfLastMonth'");
+	}
+	
+	
+	
 	
 }
