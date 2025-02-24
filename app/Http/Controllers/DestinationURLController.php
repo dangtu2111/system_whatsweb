@@ -108,7 +108,7 @@ class DestinationURLController extends Controller
 			'weight' => $request->has('random') ? $request->input('random') : 1 ,
 		]);
 
-		$link = $this->_result($link->slug, $link->type);
+		// $link = $this->_result($link->slug, $link->type);
 
 		return response([
 			'success' => true,

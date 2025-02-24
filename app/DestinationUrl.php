@@ -35,7 +35,8 @@ class DestinationUrl extends Model
         'content',
         'url',
         'hit',
-        'type'
+        'type',
+        'weight'
     ];
 
     /**
