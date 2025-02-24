@@ -37,8 +37,6 @@ class Statistic {
 
 	public function yesterdayVisit()
 	{
-		dd(Carbon::now());
-
 		return $this->_dateVisit(stat_date('=', Carbon::yesterday()->format('Y-m-d')));
 	}
 
