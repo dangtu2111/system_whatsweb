@@ -3,10 +3,9 @@ function result(res) {
 	modal.modal({
 		backdrop: 'static'
 	});
-	modal.find('textarea[name="raw_url"]').val(res.data.data.generated_link.join("\n"));
-
+	modal.find('input[name="raw_url"]').val(res.data.data.generated_link);
 	setTimeout(function() {
-		modal.find('textarea[name="raw_url"]').focus();
+		modal.find('input[name="raw_url"]').focus();
 	}, 400);
 	modal.find('input[name="html_link"]').val(res.data.data.html_link);
 	modal.find('#qrcode-image').attr('src', res.data.data.qrcode);

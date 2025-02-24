@@ -14,6 +14,9 @@
 <li class="{{ Request::is(config('whatsweb.backend') . '/destination_url*') ? 'active' : '' }}">
     <a href="{!! route('destination_url.index') !!}"><i class="fas fa-link"></i><span>Destination URL</span></a>
 </li>
+<li class="{{ Request::is(config('whatsweb.backend') . '/domain*') ? 'active' : '' }}">
+    <a href="{!! route('domain.index') !!}"><i class="fas fa-link"></i><span>Domain</span></a>
+</li>
 
 <li class="{{ Request::is(config('whatsweb.backend') . '/pages*') ? 'active' : '' }}">
     <a href="{!! route('pages.index') !!}"><i class="far fa-file"></i><span>Pages</span></a>

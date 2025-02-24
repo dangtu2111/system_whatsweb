@@ -20,6 +20,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use App\Domain;
+
 
 
 class LinkController extends Controller
@@ -175,7 +177,18 @@ class LinkController extends Controller
 
 	private function _result($slug, $type = 'WHATSAPP')
 	{
-		$link['generated_link'] = url($slug);
+
+		// $link['generated_link'] = url($slug);
+		// Lấy tất cả slug từ bảng Domain
+		$domains = Domain::pluck('slug')->toArray();
+		if (empty($domains)) {
+			// Lấy IP công khai
+			$domains = [config("app.url")]; // Gán IP vào mảng domains
+		}
+		// Tạo danh sách các đường dẫn bằng cách nối slug với domain chính
+		$link['generated_link'] = array_map(function ($domain) use ($slug) {
+			return "{$domain}/{$slug}";
+		}, $domains);
 		$link['html_link'] = '<a href="' . url($slug) . '" target="_blank"><img src="' . media(setting('features.' . strtolower($type)) . '_button_image') . '" alt="' . setting('features.' . strtolower($type) . '_button_alt') . '"></a>';
 		$link['qrcode'] = route('qrcode', [$slug]);
 		$link['qrcode_save'] = route('qrcode', [$slug, 'save']);

@@ -32,6 +32,10 @@ Route::group(['prefix' => config('whatsweb.backend'), 'middleware' => ['auth', '
 	Route::resource('destination_url', 'DestinationURLController')->except(['show']);
 	Route::post('destination_url/show', 'DestinationURLController@show')->name('destination_url.show');
 
+	Route::get('domain/export', 'DomainController@index')->name('domain.export');
+	Route::resource('domain', 'DomainController')->except(['show']);
+	Route::post('domain/show', 'DomainController@show')->name('domain.show');
+
 	Route::get('reports', 'ReportController@index')->name('reports.index');
 	Route::resource('settings', 'SettingController');
 	Route::resource('pages', 'PageController');
@@ -64,6 +68,15 @@ Route::group([
 	Route::put('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
 	Route::patch('/destination_url/{id}', 'DestinationURLController@update')->name('dashboard.destinationURL.update');
 	Route::delete('/destination_url/{id}/destroy', 'DestinationURLController@destroy')->name('dashboard.destinationURL.destroy');
+
+	Route::get('/domain', 'DomainController@index')->name('dashboard.domain.index');
+	Route::get('/domain/create', 'DomainController@create')->name('dashboard.domain.create');
+	Route::get('/domain/{id}/edit', 'DomainController@edit')->name('dashboard.domain.edit');
+	Route::post('/domain/create', 'DomainController@store')->name('dashboard.domain.store');
+	Route::post('/domain/show', 'DomainController@show')->name('dashboard.domain.show');
+	Route::put('/domain/{id}', 'DomainController@update')->name('dashboard.domain.update');
+	Route::patch('/domain/{id}', 'DomainController@update')->name('dashboard.domain.update');
+	Route::delete('/domain/{id}/destroy', 'DomainController@destroy')->name('dashboard.domain.destroy');
 	// Report
 	Route::get('reports', 'ReportController@index')->name('dashboard.reports.index');
 

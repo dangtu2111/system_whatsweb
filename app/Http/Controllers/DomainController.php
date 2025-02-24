@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\DestinationUrl;
+use App\Domain;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Jenssegers\Agent\Agent;
@@ -12,13 +12,40 @@ use Auth;
 use App\Exports\LinksExport;
 use Maatwebsite\Excel\Facades\Excel;
 use GuzzleHttp\Client;
-class DestinationURLController extends Controller 
+use App\DestinationUrl;
+class DomainController extends Controller 
 {
+	// public function index(Request $request) 
+	// {
+ 	// 	$type = request()->type ?? '';
+ 	// 	$user = request()->user ?? '';
+	// 	$links = Domain::orderBy('created_at', 'desc');
+
+    //     if(user_member())
+    //         $links = $links->whereUserId(optional(user())->id);
+
+    //     if(is_backend() && $user)
+    //         $links = $links->whereUserId($user);
+
+	// 	// if($type) {
+	// 	// 	$links = $links->whereType($type);
+	// 	// }
+
+	// 	if($request->is('*export*')) {
+	// 		if(is_demo()) return abort(403);
+
+	//         return Excel::download(new LinksExport($links->get()), 'links.' . $request->format ?? 'xlsx', constant(sprintf('%s::%s', \Maatwebsite\Excel\Excel::class, strtoupper($request->format ?? 'xlsx'))));
+	// 	}
+
+	// 	$links = $links->paginate(10);
+		
+	// 	return view('domain.index', compact('links', 'type'));
+	// }
 	public function index(Request $request) 
 	{
  		$type = request()->type ?? '';
  		$user = request()->user ?? '';
-		$links = DestinationUrl::orderBy('created_at', 'desc');
+		$links = Domain::orderBy('created_at', 'desc');
 
         if(user_member())
             $links = $links->whereUserId(optional(user())->id);
@@ -38,13 +65,13 @@ class DestinationURLController extends Controller
 
 		$links = $links->paginate(10);
 		
-		return view('destinationURL.index', compact('links', 'type'));
+		return view('domain.index', compact('links', 'type'));
 	}
 
 	public function show(Request $request)
 	{
 		$id = decrypt($request->id);
-		$link = DestinationUrl::find($id);
+		$link = Domain::find($id);
 
 		$link = $this->_result($link->slug, $link->type);
 
@@ -59,17 +86,17 @@ class DestinationURLController extends Controller
 		if(is_demo()) return abort(403);
 		
 		$id = decrypt($id);
-		$link = DestinationUrl::find($id);
+		$link = Domain::find($id);
 
 		$id = encrypt($id);
 		$title = 'Edit Link';
-		return view('destinationURL.create', compact('link', 'id', 'title'));
+		return view('domain.create', compact('link', 'id', 'title'));
 	}
 
 	public function create() 
 	{
 		$title = 'Create New Link';
-		return view('destinationURL.create', compact('title'));
+		return view('domain.create', compact('title'));
 	}
 
 	private function _validator($request, $id=false, $adds=false, $excepts=false) {
@@ -101,13 +128,21 @@ class DestinationURLController extends Controller
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
 
-		$link = DestinationUrl::find($id);
+		$link = Domain::find($id);
 
-		$input = $request->all();
-		$link->update($input);
-		$link->update([
-			'weight' => $request->has('random') ? $request->input('random') : 1 ,
-		]);
+        $data = [
+			'user_id' => optional(user())->id ?? NULL,
+			'name' => $request->input('name_phone'),
+			'slug' => preg_replace('/^www\./', '', parse_url($request->input('url'), PHP_URL_HOST)),
+			'is_active' => true
+		];
+		
+		// Cập nhật nếu domain đã tồn tại
+		$link->update($data);
+		
+		 
+		
+		
 
 		// $link = $this->_result($link->slug, $link->type);
 
@@ -126,7 +161,7 @@ class DestinationURLController extends Controller
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
 
-		$phone_number = $request->phone_code . $request->phone_number;
+		
 		// $slug = str_random(setting('features.custom_slug_max'));
 
 		// if(setting('features.custom_slug')) {
@@ -134,19 +169,16 @@ class DestinationURLController extends Controller
 		// 		$slug = $request->slug;
 		// 	}
 		// }
+        
+		$link = Domain::create([
+            'user_id' => optional(user())->id ?? NULL, // Hoặc null nếu không cần
+            'name' => $request->input('name_phone'),
+            'slug' => parse_url($request->input('url'), PHP_URL_HOST),
+            'is_active' => true
+        ]);
+        
 
-		$link = DestinationUrl::create([
-			'phone_code' => $request->phone_code ?? NULL,
-			'weight' => $request->has('random') ? $request->input('random') : 1 ,
-			'phone_number' => $phone_number ?? NULL,
-			'slug' => $request->url ?? NULL,//$slug,
-			'content' => $request->content ?? NULL,
-			'user_id' => optional(user())->id ?? NULL,
-			'type' => $request->type ?? 'WHATSAPP',
-			'url' => $request->url ?? NULL
-		]);
-
-		$link = $this->_result($request->url ?? NULL, $link->type);
+		// $link = $this->_result($request->url ?? NULL, $link->type);
 
 		return response([
 			'success' => true,
@@ -169,7 +201,7 @@ class DestinationURLController extends Controller
 	}
 
 	public function qrcode($id, $action=false) {		
-		$link = DestinationUrl::whereSlug($id)->first();
+		$link = Domain::whereSlug($id)->first();
 		if(!isset($link)) {
 			return abort(404);
 		}
@@ -192,7 +224,7 @@ class DestinationURLController extends Controller
 		if(is_demo()) return abort(403);
 
 		$id = decrypt($id);
-		$link = DestinationUrl::find($id);
+		$link = Domain::find($id);
 		$link->delete();
 
 
@@ -316,7 +348,7 @@ class DestinationURLController extends Controller
 
 	public function slug($slug)
 	{
-		$link = DestinationUrl::whereSlug($slug)->first();
+		$link = Domain::whereSlug($slug)->first();
 
 		if(!isset($link)) return abort(404);
 

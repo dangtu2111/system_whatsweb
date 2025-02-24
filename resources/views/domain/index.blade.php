@@ -15,10 +15,10 @@
                     <a href="#" class="btn btn-danger btn-icon icon-left dropdown-toggle" data-toggle="dropdown"><i class="fas fa-file-export"></i> Export</a>
                     <div class="dropdown-menu dropdown-menu-right">
                         <div class="dropdown-title">Export Format</div>
-                        <a href="{{ route('links.export', ['format' => 'xlsx', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="far fa-file-excel"></i> Xlsx</a>
-                        <a href="{{ route('links.export', ['format' => 'csv', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="fas fa-file-csv"></i> CSV</a>
-                        <a href="{{ route('links.export', ['format' => 'dompdf', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="far fa-file-pdf"></i> PDF</a>
-                        <a href="{{ route('links.export', ['format' => 'html', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="fab fa-html5"></i> HTML</a>
+                        <a href="{{ route('domain.export', ['format' => 'xlsx', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="far fa-file-excel"></i> Xlsx</a>
+                        <a href="{{ route('domain.export', ['format' => 'csv', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="fas fa-file-csv"></i> CSV</a>
+                        <a href="{{ route('domain.export', ['format' => 'dompdf', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="far fa-file-pdf"></i> PDF</a>
+                        <a href="{{ route('domain.export', ['format' => 'html', 'type' => request()->type, 'user' => request()->user]) }}" class="dropdown-item has-icon"><i class="fab fa-html5"></i> HTML</a>
                     </div>
                 </div>
             </div>
@@ -34,13 +34,13 @@
 							<div class="card-body">
 								<ul class="nav nav-pills flex-column">
 									<li class="nav-item">
-										<a class="nav-link{{$type == '' ? ' active' : ''}}" href="{{ route_type('links.index') }}">
+										<a class="nav-link{{$type == '' ? ' active' : ''}}" href="{{ route_type('domain.index') }}">
 											<i class="fas fa-list"></i> All Links
 										</a>
 									</li>
 									@foreach(link_types() as $t => $link)
 									<li class="nav-item">
-										<a class="nav-link has-icon{{$t == $type ? ' active' : ''}}" href="{{ route_type('links.index',['type' => $t]) }}">
+										<a class="nav-link has-icon{{$t == $type ? ' active' : ''}}" href="{{ route_type('domain.index',['type' => $t]) }}">
 											<i class="{{ $link['icon'] }}"></i>
 											{{ $link['text'] }}
 										</a>
@@ -75,14 +75,10 @@
 								<h4>Links</h4>
 								<div class="card-header-action">
 									<div class="dropdown">
-										<a href="#" class="btn btn-primary btn-lg btn-icon icon-left has-dropdown dropdown-toggle" data-toggle="dropdown">
+										<a href="{{route_type('domain.create', ['type' => $t])}}" class="btn btn-primary btn-lg btn-icon icon-left " >
 											<i class="fas fa-link"></i> Create New Link
 										</a>
-										<div class="dropdown-menu">
-											@foreach(link_types() as $t => $link)
-											<a href="{{route_type('links.create', ['type' => $t])}}" class="dropdown-item">{{ $link['text'] }}</a>
-											@endforeach
-										</div>										
+																				
 									</div>
 								</div>
 							</div>
@@ -94,40 +90,41 @@
 											<th>User</th>
 											@endif
 											<th>Name</th>
-											<th>Hit</th>
-											<th>Type</th>
+											<th>URL</th>
 											<th>Created At</th>
 											<th>Action</th>
 										</tr>
-										@if(count($links))
-										@foreach($links as $link)
-										@php 
-										$id = encrypt($link->id); 
-										@endphp
-										<tr>
-											@if(is_backend())
-											<td>{!! optional($link->user)->name ?? 'Guess' !!}</td>
-											@endif
-											<td>{!! $link->phone_number == '' ? '-' : $link->phone_number !!}</td>
-											<td>{!! $link->hit !!}</td>
-											<td>{!! link_types()[$link->type]['text'] !!}</td>
-											<td>{!! $link->created_at->diffForHumans() !!}</td>
-											<td>
-												<a href="#" data-id="{{ $id }}" class="btn btn-primary btn-sm view-link">View</a>
-												<a href="{{ route_type('links.edit', $id) }}" class="btn btn-light btn-sm">Edit</a>
-												<a href="#" class="btn btn-danger btn-sm" data-confirm="Wait wait wait|This action <b>CANNOT</b> be undone, do you want to continue?" data-confirm-yes="$('form[data-id=\'{{$id}}\']').submit();">Delete</a>
-												<form action="{!! route_type('links.destroy', $id) !!}" method="post" data-id="{{ $id }}">
-													@csrf
-													{!! method_field('DELETE') !!}
-												</form>
-											</td>
-										</tr>
-										@endforeach
+										@if ($links->isNotEmpty()) {{-- Kiểm tra nếu danh sách có dữ liệu --}}
+											@foreach ($links as $link)
+												@php 
+													$id = encrypt($link->id); 
+												@endphp
+												<tr>
+													@if(is_backend())
+														<td>{!! optional($link->user)->name ?? 'Guest' !!}</td>
+													@endif
+													<td>{{ $link->name }}</td>
+													<td>{{ $link->slug }}</td>
+
+													<td>{!! $link->created_at->diffForHumans() !!}</td>
+													<td>
+														<a href="{{ route_type('domain.edit', $id) }}" class="btn btn-light btn-sm">Edit</a>
+														<a href="#" class="btn btn-danger btn-sm" 
+														data-confirm="Wait wait wait|This action <b>CANNOT</b> be undone, do you want to continue?" 
+														data-confirm-yes="$('form[data-id=\'{{$id}}\']').submit();">Delete</a>
+														<form action="{!! route_type('domain.destroy', $id) !!}" method="post" data-id="{{ $id }}">
+															@csrf
+															{!! method_field('DELETE') !!}
+														</form>
+													</td>
+												</tr>
+											@endforeach
 										@else
-										<tr>
-											<td colspan="6" class="text-center">No data</td>
-										</tr>
+											<tr>
+												<td colspan="6" class="text-center">No data</td>
+											</tr>
 										@endif
+
 									</table>
 								</div>
 							</div>
@@ -145,7 +142,7 @@
 		@endif
 	</section>
 
-	@include('parts.links.modal')
+	@include('parts.domain.modal')
 @stop
 
 @section('plugins_js')
@@ -158,14 +155,13 @@
 <script>
 	new ClipboardJS('.btn');
 	
-
 	$(".view-link").click(function() {
 		let me = $(this);
-		console.log("Button clicked!"); 
+	
 		$.cardProgress(me.closest('.card'));
 	
 		axios.post(
-			'{{ route_type('links.show') }}', 
+			'{{ route_type('domain.show') }}', 
 			{ id: me.attr('data-id') }, 
 			{
 				headers: {
@@ -194,6 +190,6 @@
 	swal('Deleted','Your link has been permanently deleted', 'success');
 	@endif
 
-	@include('parts.links.modal_js')
+	@include('parts.domain.modal_js')
 </script>
 @stop
