@@ -7,6 +7,8 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+
 
 class Statistic {
 	public function totalLink()
@@ -128,4 +130,31 @@ class Statistic {
 
 		return $stat;
 	}
+	
+
+	public function getActiveVisitors()
+	{
+		$userId = user_member();
+		
+		if (!$userId) {
+			return 0;
+		}
+
+		// Lấy danh sách visitor từ cache (nếu chưa có, mặc định là mảng rỗng)
+		$cacheKey = "active_visitors-{$userId}";
+		$activeVisitors = Cache::get($cacheKey, []);
+		
+		// Xóa session cũ hơn 5 phút
+		$now = Carbon::now()->timestamp;
+		$activeVisitors = array_filter($activeVisitors, function ($timestamp) use ($now) {
+			return $timestamp > ($now - 60);
+		});
+
+		// Cập nhật lại cache với thời gian hết hạn là 5 phút
+		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(5));
+
+		return count($activeVisitors);
+	}
+
+	
 }

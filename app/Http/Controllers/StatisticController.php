@@ -34,17 +34,7 @@ class StatisticController extends Controller
         return response(['data' => $statistic->chart()], 200);
     }
     
-    public function getActiveVisitors(Request $request) {
-        $userId = Auth::id(); // Lấy ID của user đang đăng nhập
-
-        // Kiểm tra nếu user chưa đăng nhập
-        if (!$userId) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        // Lấy số lượng người đang truy cập từ cache
-        $activeVisitors = Cache::get("active_visitors_{$userId}", 0);
-
-        return response()->json(['active_visitors' => $activeVisitors]);
+    public function getActiveVisitors(Statistic $statistic) {
+        return $statistic->getActiveVisitors();
     }
 }

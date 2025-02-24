@@ -463,12 +463,13 @@ class LinkController extends Controller
 				return redirect($secondRedirect, 302);
 			}
 		}
+		$cacheKey = "active_visitors-{$link->user_id}";
+		$activeVisitors = Cache::get($cacheKey, []);
 
-		// Lưu thông tin người truy cập vào cache với thời gian hết hạn là 5 phút
-        $expiresAt = Carbon::now()->addMinutes(5);
-        $key = 'visiting-slug-' . $link->user_id . '-' . request()->ip();
-        Cache::put($key, true, $expiresAt);
+		$activeVisitors[request()->ip()] = Carbon::now()->timestamp;
+		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
 
+		
 		// Cập nhật lượt truy cập
 		$link->update([
 			'hit' => $link->hit + 1
