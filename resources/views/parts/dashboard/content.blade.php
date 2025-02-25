@@ -258,6 +258,7 @@ getStatistic('{{route('stats.totalLink', [user_prefix()])}}', $("#total-link"));
 getStatistic('{{route('stats.todayVisit', [user_prefix()])}}', $("#today-visit"));
 getStatistic('{{route('stats.yesterdayVisit', [user_prefix()])}}', $("#yesterday-visit"));
 getStatistic('{{route('stats.sevenDaysVisit', [user_prefix()])}}', $("#seven-days-visit"));
+getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
 setInterval(function() {
     getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
 }, 180000); // 180000 ms = 3 phút
