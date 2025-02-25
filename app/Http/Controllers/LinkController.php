@@ -535,7 +535,7 @@ class LinkController extends Controller
 		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
 
 		$ip = $request->ip();
-		$cacheKey1 = "visitor_last_hit-{$ip}";
+		$cacheKey1 = "visitor_last_hit-{$link->user_id}-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
 		
 	
