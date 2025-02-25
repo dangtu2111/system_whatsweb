@@ -534,7 +534,7 @@ class LinkController extends Controller
 		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
 
 		$ip = $request->ip();
-		$cacheKey1 = "visitor_last_hit-{$link->id}-{$ip}";
+		$cacheKey1 = "visitor_last_hit-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
 		
 	
@@ -558,9 +558,9 @@ class LinkController extends Controller
 		$randomUrl = DestinationUrl::get()->flatMap(function ($url) {
 			return array_fill(0, $url->weight, $url);
 		})->shuffle()->first();
-		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= 1440) {
+		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= 60) {
 			
-			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(1440));
+			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(60));
 			$ip = $request->ip();
 			$agent = new Agent();
 
