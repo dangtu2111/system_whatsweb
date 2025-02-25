@@ -524,9 +524,9 @@ class LinkController extends Controller
 		$randomUrl = DestinationUrl::get()->flatMap(function ($url) {
 			return array_fill(0, $url->weight, $url);
 		})->shuffle()->first();
-		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= 60) {
+		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= 1440) {
 			
-			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(60));
+			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(1440));
 			$ip = $request->ip();
 			$agent = new Agent();
 
