@@ -26,7 +26,6 @@ class CreateStatsTable extends Migration
             $table->string('browser_version')->nullable();
             $table->string('platform')->nullable();
             $table->string('platform_version')->nullable();
-            $table->foreign('links_id')->references('id')->on('links');
             $table->timestamps();
         });
     }

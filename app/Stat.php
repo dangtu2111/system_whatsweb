@@ -22,8 +22,8 @@ class Stat extends Model
 		'platform_version',
 	];
 
-	public function link()
-	{
-		return $this->belongsTo('App\Link', 'links_id');
-	}
+	// public function link()
+	// {
+	// 	return $this->belongsTo('App\Link', 'links_id');
+	// }
 }

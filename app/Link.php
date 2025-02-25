@@ -69,9 +69,9 @@ class Link extends Model
         return $this->belongsTo('App\User');
     }
 
-    public function stat()
-    {
-        return $this->hasMany('App\Stat', 'links_id');
-    }
+    // public function stat()
+    // {
+    //     return $this->hasMany('App\Stat', 'links_id');
+    // }
     
 }

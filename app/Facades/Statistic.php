@@ -124,7 +124,7 @@ class Statistic {
 		$stat = $stat->whereRaw('date(stats.created_at) ' . $date);
 
 		if(user_member())
-			$stat = $stat->whereRaw('links.user_id = ' . user_member());
+			$stat = $stat->whereRaw('stats.user_id = ' . user_member());
 
 		$stat = $stat->{$method}();
 

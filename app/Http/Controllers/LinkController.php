@@ -227,7 +227,7 @@ class LinkController extends Controller
 		$id = decrypt($id);
 		$link = Link::find($id);
 		// Xóa dữ liệu liên quan trong bảng `stats` trước
-		// Stat::where('links_id', $id)->delete();
+		Stat::where('links_id', $id)->update(['links_id' => null]);
 
 		// Sau đó mới xóa link
 		$link->delete();
