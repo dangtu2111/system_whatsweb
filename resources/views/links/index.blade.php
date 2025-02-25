@@ -74,6 +74,9 @@
 							<div class="card-header">
 								<h4>Links</h4>
 								<div class="card-header-action">
+									<a href="#" class="btn btn-primary btn-lg btn-icon icon-left" id="copy-button">
+											<i class="fas fa-copy"></i> Copy
+									</a>
 									<div class="dropdown">
 										<a href="#" class="btn btn-primary btn-lg btn-icon icon-left has-dropdown dropdown-toggle" data-toggle="dropdown">
 											<i class="fas fa-link"></i> Create New Link
@@ -90,9 +93,12 @@
 								<div class="table table-responsive">
 									<table class="table table-striped">
 										<tr>
+											
+											<th><input type="checkbox" id="select-all"></th>
 											@if(is_backend())
 											<th>User</th>
 											@endif
+
 											<th>Name</th>
 											<th>Hit</th>
 											<th>Type</th>
@@ -105,6 +111,8 @@
 										$id = encrypt($link->id); 
 										@endphp
 										<tr>
+											<td><input type="checkbox" class="row-checkbox link_id" value="{{ $id }}"></td>
+
 											@if(is_backend())
 											<td>{!! optional($link->user)->name ?? 'Guess' !!}</td>
 											@endif
@@ -157,7 +165,37 @@
 @section('scripts')
 <script>
 	new ClipboardJS('.btn');
-	
+	$("#select-all").on("change", function () {
+		$(".row-checkbox").prop("checked", $(this).prop("checked"));
+	});
+	$("#copy-button").on("click", function () {
+		let me = $(this);
+        let selectedIds = $(".row-checkbox:checked").map(function () {
+            return $(this).val();
+        }).get(); // Lấy danh sách ID từ checkbox được chọn
+		console.log(selectedIds);
+        if (selectedIds.length === 0) {
+            alert("Vui lòng chọn ít nhất một mục.");
+            return;
+        }
+
+        // Gọi API bằng Axios
+        axios.post(
+			"{{ route_type('links.shows') }}", { ids: selectedIds })
+            .then(function(res) {
+				$.cardProgressDismiss(me.closest('.card'));
+				result(res);
+			})
+			.catch(function(err) {
+				$.cardProgressDismiss(me.closest('.card'));
+
+				if(err.response.status == 0) {
+					swal('Aw! There is something went wrong.', 'Please check your internet connection or contact administration.', 'error');
+				}else if(err.response.status == 419) {
+					swal('Aw! There is something went wrong.', 'Fetching data failed, please refresh the page or login with your account again.', 'error');
+				}
+			});
+    });
 
 	$(".view-link").click(function() {
 		let me = $(this);

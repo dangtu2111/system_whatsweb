@@ -24,7 +24,7 @@ $statistic = new App\Facades\Statistic;
           </div>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+      <!-- <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="card card-statistic-1">
           <div class="card-icon bg-primary">
             <i class="fas fa-link"></i>
@@ -38,7 +38,7 @@ $statistic = new App\Facades\Statistic;
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="card card-statistic-1">
           <div class="card-icon bg-danger">
@@ -69,7 +69,7 @@ $statistic = new App\Facades\Statistic;
           </div>
         </div>
       </div>
-      <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+      <!-- <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="card card-statistic-1">
           <div class="card-icon bg-success">
             <i class="fas fa-chart-line"></i>
@@ -83,7 +83,7 @@ $statistic = new App\Facades\Statistic;
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <div class="col-lg-3 col-md-6 col-sm-6 col-12">
         <div class="card card-statistic-1">
           <div class="card-icon bg-success">
@@ -254,10 +254,10 @@ function getStatistic(url, el) {
   })
 }
 
-getStatistic('{{route('stats.totalLink', [user_prefix()])}}', $("#total-link"));
+// getStatistic('{{route('stats.totalLink', [user_prefix()])}}', $("#total-link"));
 getStatistic('{{route('stats.todayVisit', [user_prefix()])}}', $("#today-visit"));
 getStatistic('{{route('stats.yesterdayVisit', [user_prefix()])}}', $("#yesterday-visit"));
-getStatistic('{{route('stats.sevenDaysVisit', [user_prefix()])}}', $("#seven-days-visit"));
+// getStatistic('{{route('stats.sevenDaysVisit', [user_prefix()])}}', $("#seven-days-visit"));
 getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
 setInterval(function() {
 getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));

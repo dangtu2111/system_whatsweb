@@ -27,6 +27,7 @@ Route::group(['prefix' => config('whatsweb.backend'), 'middleware' => ['auth', '
 	Route::get('links/export', 'LinkController@index')->name('links.export');
 	Route::resource('links', 'LinkController')->except(['show']);
 	Route::post('links/show', 'LinkController@show')->name('links.show');
+	Route::post('links/shows', 'LinkController@shows')->name('links.shows');
 	
 	Route::get('destination_url/export', 'DestinationURLController@index')->name('destination_url.export');
 	Route::resource('destination_url', 'DestinationURLController')->except(['show']);
@@ -55,6 +56,7 @@ Route::group([
 	Route::get('/links/{id}/edit', 'LinkController@edit')->name('dashboard.links.edit');
 	Route::post('/links/create', 'LinkController@store')->name('dashboard.links.store');
 	Route::post('/links/show', 'LinkController@show')->name('dashboard.links.show');
+	Route::post('/links/shows', 'LinkController@shows')->name('dashboard.links.shows');
 	Route::put('/links/{id}', 'LinkController@update')->name('dashboard.links.update');
 	Route::patch('/links/{id}', 'LinkController@update')->name('dashboard.links.update');
 	Route::delete('/links/{id}/destroy', 'LinkController@destroy')->name('dashboard.links.destroy');

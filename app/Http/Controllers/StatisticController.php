@@ -31,7 +31,7 @@ class StatisticController extends Controller
     }
 
     public function chart(Statistic $statistic) {
-        return response(['data' => $statistic->chart()], 200);
+        return response(['data' => $statistic->chart1()], 200);
     }
     
     public function getActiveVisitors(Statistic $statistic) {

@@ -17,7 +17,7 @@ class CreateLinksTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->nullable();
             $table->string('slug');
-            $table->string('phone_number');
+            $table->string('phone_number')->nullable();
             $table->string('phone_code')->nullable();
             $table->text('content')->nullable();
             $table->text('url')->nullable();

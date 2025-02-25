@@ -64,6 +64,39 @@ class LinkController extends Controller
 			'data' => $link
 		], 200);
 	}
+	public function shows(Request $request)
+	{
+		if (!$request->has('ids')) {
+			return response()->json([
+				'success' => false, 
+				'message' => 'Missing ids'
+			], 400);
+		}
+
+		$links = [];
+
+		foreach ($request->input("ids") as $idLink) {
+			try {
+				$id = decrypt($idLink);
+				$link = Link::find($id);
+
+				if (!$link) {
+					continue; // Bỏ qua nếu không tìm thấy link
+				}
+
+				$links[] = $this->_result($link->slug, $link->type);
+			} catch (\Exception $e) {
+				continue; // Bỏ qua nếu decrypt lỗi
+			}
+		}
+
+		return response()->json([
+			'success' => true,
+			'data' => $links
+		], 200);
+	}
+
+	
 
 	public function edit($id)
 	{
@@ -131,6 +164,7 @@ class LinkController extends Controller
 			'data' => $link
 		], 200);
 	}
+	
 
 	public function store(Request $request)
 	{
@@ -141,37 +175,38 @@ class LinkController extends Controller
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
 		
-		$phone_number = $request->phone_code . $request->phone_number;
-		$slug = str_random(setting('features.custom_slug_max'));
-
-		if (setting('features.custom_slug')) {
-			if (isset($request->slug) && trim($request->slug)) {
+		// $phone_number = $request->phone_code . $request->phone_number;
+		$number =  is_numeric($request->input('number')) && (int) $request->input('number') > 0 
+		? (int) $request->input('number') 
+		: 1;
+		$links = [];
+		 // Nếu `number` > 1, tạo nhiều link
+		for ($i = 0; $i < $number; $i++) {
+			$slug = Str::random(setting('features.custom_slug_max'));
+	
+			// Nếu `number` không được chỉ định (chỉ tạo 1 link), kiểm tra slug người dùng nhập
+			if ($number == 1 && setting('features.custom_slug') && isset($request->slug) && trim($request->slug)) {
 				$slug = $request->slug;
 			}
+	
+			$link = Link::create([
+				'phone_code'    => $request->phone_code ?? NULL,
+				'phone_number'  => $phone_number ?? "NULL",
+				'slug'          => $slug,
+				'content'       => $request->input('content') ?? NULL,
+				'user_id'       => optional(auth()->user())->id ?? NULL,
+				'type'          => $request->type ?? 'WHATSAPP',
+				'url'           => $request->url ?? NULL
+			]);
+			
+	
+			// Thêm vào danh sách
+			$links[] = $this->_result($slug, $link->type);
 		}
-		$url = $request->url;
-		$content = NULL;
-		// Kiểm tra nếu URL là hình ảnh
-		if ($this->isValidImageUrl($url)) {
-			$content = $this->downloadImage($url);
-		}
-		
-
-		$link = Link::create([
-			'phone_code' => $request->phone_code ?? NULL,
-			'phone_number' => $request->input('name_phone') ?? NULL,
-			'slug' => $slug,
-			'content' => $content ?? NULL,
-			'user_id' => optional(user())->id ?? NULL,
-			'type' => $request->type ?? 'WHATSAPP',
-			'url' => $request->url ?? NULL
-		]);
-
-		$link = $this->_result($slug, $link->type);
 
 		return response([
 			'success' => true,
-			'data' => $link
+			'data' => $links
 		], 200);
 	}
 
@@ -196,7 +231,6 @@ class LinkController extends Controller
 		$link['share_twitter'] = 'https://twitter.com/intent/tweet?status=' . url($slug);
 		$link['share_whatsapp'] = 'https://api.whatsapp.com/send?text=' . url($slug);
 		$link['share_telegram'] = 'https://telegram.me/share/url?url=' . url($slug);
-
 		return $link;
 	}
 

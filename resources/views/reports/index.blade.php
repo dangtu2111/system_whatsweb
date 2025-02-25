@@ -21,15 +21,17 @@
 									<label for="choose-date">Choose Date</label>
 									<input type="text" name="date" class="form-control daterange" id="choose-date" value="{!! Carbon\Carbon::today()->subDays('7') .' - ' . date('Y-m-d') !!}">
 								</div>
+								
 								<div class="form-group mb-0">
-									<label for="choose-link">Link</label>
-									<select class="form-control select2" name="link" id="choose-link">
+									<label for="choose-link">User</label>
+									<select class="form-control select2" name="user" id="choose-link">
 										<option value="">All</option>
-										@foreach(statistic()->myLink() as $link)
-										<option value="{{ encrypt($link->id) }}">{{ route('slug', $link->slug) }}</option>
+										@foreach(statistic()->myUser() as $user)
+										<option value="{{ encrypt($user->id) }}">{{ $user->name}}</option>
 										@endforeach
 									</select>
 								</div>
+								
 							</div>
 							<div class="card-footer bg-whitesmoke text-right">
 								<button type="submit" class="btn btn-primary">Filter</button>
@@ -42,7 +44,8 @@
 						<div class="card-header">
 							<h4>Report</h4>
 							<div class="card-header-action">
-								<a href="#tab-chart" class="btn active">Chart</a>
+								<a href="#tab-table" class="btn active">Table</a>
+								<a href="#tab-chart" class="btn ">Chart</a>
 								<a href="#tab-referer" class="btn">Referer</a>
 								<a href="#tab-device" class="btn">Device</a>
 								<a href="#tab-platform" class="btn">Platform</a>
@@ -51,10 +54,13 @@
 						</div>
 						<div class="card-body p-0">
 							<div class="tab-content">
-								<div class="tab-pane p-0 active" id="tab-chart">
+								<div class="tab-pane p-0 " id="tab-chart">
 									<div class="p-4">
 										<canvas id="myChart" height="150"></canvas>
 									</div>
+								</div>
+								<div class="tab-pane p-0 active" id="tab-table">
+									<div id="userTable-table" class="table-responsive"></div>
 								</div>
 								<div class="tab-pane p-0" id="tab-referer">
 									<div id="referer-table" class="table-responsive"></div>
@@ -115,25 +121,49 @@ function filter(data) {
 
 	  	var table = [];
 	  	for(let i = 0; i < len; i++) {
-	  		table[i] = '';
-	  		table[i] += '<table class="table table-striped">';
-	  		table[i] += '<tr>';
-	  		table[i] += '	<th>No</th>';
-	  		table[i] += '	<th>'+ ucwords(obj[i]) +'</th>';
-	  		table[i] += '	<th>Count</th>';
-	  		table[i] += '</tr>';
-	  		no = 0;
-	  		data.data.stats[obj[i]].forEach(function(item) {
-	  			no ++;
-		  		table[i] += '<tr>';
-		  		table[i] += '	<td>'+ no +'</td>';
-		  		table[i] += '	<td>'+ ucwords((item[obj[i]] || '-').toLowerCase()) +'</td>';
-		  		table[i] += '	<td>'+ item['count'] +'</td>';
-		  		table[i] += '</tr>';
-	  		});
-	  		table[i] += '</table>';
+			if(obj[i]=="userTable"){
+				table[i] = '';
+				table[i] += '<table class="table table-striped">';
+				table[i] += '<tr>';
+				table[i] += '	<th>No</th>';
+				table[i] += '	<th>Name </th>';
+				table[i] += '	<th>Date</th>';
+				table[i] += '	<th>Count</th>';
+				table[i] += '</tr>';
+				no = 0;
+				data.data.stats[obj[i]].forEach(function(item) {
+					no ++;
+					table[i] += '<tr>';
+					table[i] += '	<td>'+ no +'</td>';
+					table[i] += '	<td>'+ ucwords((item['name'] || '-').toLowerCase()) +'</td>';
+					table[i] += '	<td>'+ ucwords((item['created_at'] || '-').toLowerCase()) +'</td>';
+					table[i] += '	<td>'+ item['count'] +'</td>';
+					table[i] += '</tr>';
+				});
+				table[i] += '</table>';
 
-		  	$("#"+ obj[i] +"-table").html(table[i]);
+				$("#"+ obj[i] +"-table").html(table[i]);
+			}else{
+				table[i] = '';
+				table[i] += '<table class="table table-striped">';
+				table[i] += '<tr>';
+				table[i] += '	<th>No</th>';
+				table[i] += '	<th>'+ ucwords(obj[i]) +'</th>';
+				table[i] += '	<th>Count</th>';
+				table[i] += '</tr>';
+				no = 0;
+				data.data.stats[obj[i]].forEach(function(item) {
+					no ++;
+					table[i] += '<tr>';
+					table[i] += '	<td>'+ no +'</td>';
+					table[i] += '	<td>'+ ucwords((item[obj[i]] || '-').toLowerCase()) +'</td>';
+					table[i] += '	<td>'+ item['count'] +'</td>';
+					table[i] += '</tr>';
+				});
+				table[i] += '</table>';
+
+				$("#"+ obj[i] +"-table").html(table[i]);
+			}
 	  	}
 
 	    var ctx = document.getElementById("myChart").getContext('2d');

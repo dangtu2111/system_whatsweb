@@ -3,9 +3,20 @@ function result(res) {
 	modal.modal({
 		backdrop: 'static'
 	});
-	modal.find('textarea[name="raw_url"]').val(
-		res.data.data.generated_link.map(link => `https://${link}`).join("\n")
-	);
+	let responseData = res.data.data;
+
+	// Kiểm tra nếu responseData là một mảng
+	if (Array.isArray(responseData)) {
+		modal.find('textarea[name="raw_url"]').val(
+			responseData.flatMap(item => item.generated_link.map(link => `https://${link}`)).join("\n")
+		);
+	} else if (typeof responseData === "object" && responseData !== null) {
+		// Nếu data là một object có thuộc tính `generated_link`
+		modal.find('textarea[name="raw_url"]').val(
+			responseData.generated_link.map(link => `https://${link}`).join("\n")
+		);
+	}
+
 
 
 	setTimeout(function() {
