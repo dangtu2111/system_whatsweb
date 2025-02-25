@@ -119,7 +119,7 @@ class Statistic {
 	private function _dateVisit($date, $method='count')
 	{
 		$stat = new Stat;
-		$stat = $stat->join('links', 'stats.links_id', 'links.id');
+		$stat = $stat->leftJoin('links', 'stats.links_id', 'links.id');
 		$stat = $stat->selectRaw('count(stats.links_id) as count');
 		$stat = $stat->whereRaw('date(stats.created_at) ' . $date);
 
