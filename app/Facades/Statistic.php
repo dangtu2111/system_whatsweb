@@ -166,7 +166,8 @@ class Statistic {
 		$output = collect($values)->values();
 
 		$userTable_stat = clone $raw_stat;
-		$userTable = $userTable_stat->groupBy('referer')->orderBy('count', 'desc')->get();
+		$userTable = $userTable_stat->groupBy('stats.created_at')->orderBy('count', 'desc')->get();
+
 		$referer_stat = clone $raw_stat;
 		$referer = $referer_stat->groupBy('referer')->orderBy('count', 'desc')->get();
 		$device_stat = clone $raw_stat;
