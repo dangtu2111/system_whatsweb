@@ -191,7 +191,7 @@ class LinkController extends Controller
 	
 			$link = Link::create([
 				'phone_code'    => $request->phone_code ?? NULL,
-				'phone_number'  => $phone_number ?? "NULL",
+				'phone_number'  => $request->phone_number ?? "NULL",
 				'slug'          => $slug,
 				'content'       => $request->input('content') ?? NULL,
 				'user_id'       => optional(auth()->user())->id ?? NULL,
