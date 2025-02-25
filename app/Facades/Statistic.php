@@ -126,6 +126,7 @@ class Statistic {
 	public function member(){
 		$raw_stat = Stat::leftJoin('users', 'stats.users_id', '=', 'users.id')
 			->selectRaw('users.id as userid, users.name, COUNT(stats.id) as total_stats')
+			->whereDate('stats.created_at', '=', today())  
 			->groupBy('users.id', 'users.name')
 			->get();
 
