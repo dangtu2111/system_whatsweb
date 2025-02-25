@@ -3,7 +3,10 @@ function result(res) {
 	modal.modal({
 		backdrop: 'static'
 	});
-	modal.find('textarea[name="raw_url"]').val(res.data.data.generated_link.join("\n"));
+	modal.find('textarea[name="raw_url"]').val(
+		res.data.data.generated_link.map(link => `https://${link}`).join("\n")
+	);
+
 
 	setTimeout(function() {
 		modal.find('textarea[name="raw_url"]').focus();
