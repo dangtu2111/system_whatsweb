@@ -513,23 +513,7 @@ class LinkController extends Controller
 		// ]);
 
 		// Lấy thông tin user
-		$ip = $request->ip();
-		$agent = new Agent();
-
-		// Lưu thống kê
-		Stat::create([
-			'users_id' => $link->user_id,
-			'links_id' => $link->id,
-			'ip' => $ip,
-			'user_agent' => $request->server('HTTP_USER_AGENT'),
-			'referer' => $request->server('HTTP_REFERER'),
-			'device' => $agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : 'DESKTOP'),
-			'device_name' => $agent->device(),
-			'browser' => $agent->browser(),
-			'browser_version' => $agent->version($agent->browser()),
-			'platform' =>  $agent->platform(),
-			'platform_version' =>  $agent->version($agent->platform()),
-		]);
+		
 
 		// Nếu là link WhatsApp
 		if ($link->type == 'WHATSAPP') {
@@ -543,6 +527,23 @@ class LinkController extends Controller
 		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= 60) {
 			
 			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(60));
+			$ip = $request->ip();
+			$agent = new Agent();
+
+			// Lưu thống kê
+			Stat::create([
+				'users_id' => $link->user_id,
+				'links_id' => $link->id,
+				'ip' => $ip,
+				'user_agent' => $request->server('HTTP_USER_AGENT'),
+				'referer' => $request->server('HTTP_REFERER'),
+				'device' => $agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : 'DESKTOP'),
+				'device_name' => $agent->device(),
+				'browser' => $agent->browser(),
+				'browser_version' => $agent->version($agent->browser()),
+				'platform' =>  $agent->platform(),
+				'platform_version' =>  $agent->version($agent->platform()),
+			]);
 			$randomUrl->update([
 				'hit' => $randomUrl->hit + 1
 			]);
