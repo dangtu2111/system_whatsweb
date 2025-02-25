@@ -166,8 +166,8 @@ class Statistic {
 		$output = collect($values)->values();
 
 		$userTable_stat = clone $raw_stat;
-		$userTable = $userTable_stat->groupBy('stats.created_at')
-		->selectRaw('stats.created_at, users.name, COUNT(stats.id) as count') // Tính tổng số stat theo ngày
+		$userTable = $userTable_stat->groupBy('DATE(stats.created_at)')
+		->selectRaw('DATE(stats.created_at), users.name, COUNT(stats.id) as count') // Tính tổng số stat theo ngày
 		->orderBy('count', 'desc')
 		->get();
 
