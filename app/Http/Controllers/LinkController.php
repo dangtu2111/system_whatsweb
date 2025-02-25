@@ -484,10 +484,21 @@ class LinkController extends Controller
 			}
 		}
 		$cacheKey = "active_visitors-{$link->user_id}";
+
+		// Lấy dữ liệu từ cache
 		$activeVisitors = Cache::get($cacheKey, []);
 
+		// Đảm bảo giá trị lấy ra là một mảng
+		if (!is_array($activeVisitors)) {
+			$activeVisitors = [];
+		}
+
+		// Gán giá trị vào mảng
 		$activeVisitors[request()->ip()] = Carbon::now()->timestamp;
+
+		// Cập nhật lại cache
 		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
+
 		$ip = $request->ip();
 		$cacheKey1 = "visitor_last_hit-{$link->id}-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
