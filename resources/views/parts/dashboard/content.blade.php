@@ -119,10 +119,20 @@ $statistic = new App\Facades\Statistic;
       <div class="col-lg-8">
         <div class="card">
           <div class="card-header">
-            <h4>Last 7 Days</h4>
+            <h4>List member</h4>
           </div>
           <div class="card-body">
-            <canvas id="myChart" height="158"></canvas>
+          <table id="member-table" class="table table-striped">
+            <tbody >
+              <tr>	
+                <th>No</th>	
+                <th>Member </th>	
+                <th>View </th>	
+              </tr>
+            
+            </tbody>
+          </table>
+            <!-- <canvas id="myChart" height="158"></canvas> -->
           </div>
         </div>
       </div>
@@ -181,65 +191,100 @@ $.ajaxSetup({
   },
 })
 $.ajax({
-  url: '{{ route('stats.chart7days', [user_prefix()]) }}',
-  type: 'POST',
-  beforeSend: function() {
-    $.cardProgress($("#myChart").closest('.card'));
-  },
-  complete: function() {
-    $.cardProgressDismiss($("#myChart").closest('.card'));
-  },
-  success: function(data) {
-    var ctx = document.getElementById("myChart").getContext('2d');
-    var myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: JSON.parse(data.data.labels),
-        datasets: [{
-          label: 'Visit',
-          data: JSON.parse(data.data.values),
-          borderWidth: 2,
-          backgroundColor: '#005e54',
-          borderWidth: 0,
-          borderColor: 'transparent',
-          pointBorderWidth: 0,
-          pointRadius: 3.5,
-          pointBackgroundColor: 'transparent',
-          pointHoverBackgroundColor: '#005e54',
-        }]
-      },
-      options: {
-        legend: {
-          display: false
-        },
-        scales: {
-          yAxes: [{
-            gridLines: {
-              // display: false,
-              drawBorder: false,
-              color: '#f2f2f2',
-            },
-            ticks: {
-              beginAtZero: true,
-              min: 0,
-              callback: function(value, index, values) {
-                if (Math.floor(value) === value) {
-                  return value;
-                }
-              }
-            }
-          }],
-          xAxes: [{
-            gridLines: {
-              display: false,
-              tickMarkLength: 15,
-            }
-          }]
-        },
-      }
-    });
-  }
-})
+    url: "{{ route('stats.member', [user_prefix()]) }}",
+    type: "GET",
+    beforeSend: function() {
+        console.log("Đang tải dữ liệu...");
+    },
+    success: function(data) {
+        let tableBody = $("#member-table tbody"); // Lấy phần thân bảng
+        tableBody.empty(); // Xóa nội dung cũ trước khi thêm dữ liệu mới
+        tableBody.append(`
+            <tr>
+                <th>No</th>	
+                <th>Member</th>	
+                <th>View</th>	
+            </tr>
+        `);
+
+        $.each(data, function(index, member) {
+            let row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${member.name}</td>
+                    <td>${member.total_stats }</td>
+                </tr>
+            `;
+            tableBody.append(row);
+        });
+    },
+    error: function(xhr) {
+        console.error("Lỗi khi gọi API:", xhr.responseText);
+    }
+});
+
+
+
+// $.ajax({
+//   url: '{{ route('stats.chart7days', [user_prefix()]) }}',
+//   type: 'POST',
+//   beforeSend: function() {
+//     $.cardProgress($("#myChart").closest('.card'));
+//   },
+//   complete: function() {
+//     $.cardProgressDismiss($("#myChart").closest('.card'));
+//   },
+//   success: function(data) {
+//     var ctx = document.getElementById("myChart").getContext('2d');
+//     var myChart = new Chart(ctx, {
+//       type: 'line',
+//       data: {
+//         labels: JSON.parse(data.data.labels),
+//         datasets: [{
+//           label: 'Visit',
+//           data: JSON.parse(data.data.values),
+//           borderWidth: 2,
+//           backgroundColor: '#005e54',
+//           borderWidth: 0,
+//           borderColor: 'transparent',
+//           pointBorderWidth: 0,
+//           pointRadius: 3.5,
+//           pointBackgroundColor: 'transparent',
+//           pointHoverBackgroundColor: '#005e54',
+//         }]
+//       },
+//       options: {
+//         legend: {
+//           display: false
+//         },
+//         scales: {
+//           yAxes: [{
+//             gridLines: {
+//               // display: false,
+//               drawBorder: false,
+//               color: '#f2f2f2',
+//             },
+//             ticks: {
+//               beginAtZero: true,
+//               min: 0,
+//               callback: function(value, index, values) {
+//                 if (Math.floor(value) === value) {
+//                   return value;
+//                 }
+//               }
+//             }
+//           }],
+//           xAxes: [{
+//             gridLines: {
+//               display: false,
+//               tickMarkLength: 15,
+//             }
+//           }]
+//         },
+//       }
+//     });
+//   }
+// })
 
 function getStatistic(url, el) {
   $.ajax({
@@ -249,6 +294,7 @@ function getStatistic(url, el) {
       
     },
     success: function(data) {
+      
       el.html(data);
     }
   })

@@ -102,6 +102,7 @@ Route::group(['prefix' => '{prefix?}/stats', 'middleware' => 'auth'], function()
     Route::post('yesterday-visit', [StatisticController::class, 'yesterdayVisit'])->name('stats.yesterdayVisit');
     Route::post('seven-days-visit', [StatisticController::class, 'sevenDaysVisit'])->name('stats.sevenDaysVisit');
     Route::post('chart-7-days', [StatisticController::class, 'chart7days'])->name('stats.chart7days');
+    Route::get('member', [StatisticController::class, 'member'])->name('stats.member');
     Route::post('chart', [StatisticController::class, 'chart'])->name('stats.chart');
 	// Thống kê số người đang truy cập
     Route::post('active-visitors', [StatisticController::class, 'getActiveVisitors'])->name('stats.activeVisitors');

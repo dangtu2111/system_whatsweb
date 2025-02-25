@@ -123,6 +123,16 @@ class Statistic {
 		$user = request()->link ? decrypt(request()->link) : false;
 		return $this->_baseChart1($date[0], $date[1], $user);
 	}
+	public function member(){
+		$raw_stat = Stat::leftJoin('users', 'stats.users_id', '=', 'users.id')
+			->selectRaw('users.id as userid, users.name, COUNT(stats.id) as total_stats')
+			->groupBy('users.id', 'users.name')
+			->get();
+
+	
+		return response()->json($raw_stat);
+	}
+	
 
 	private function _baseChart1($from, $to, $user=false)
 	{

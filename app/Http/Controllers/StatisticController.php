@@ -46,5 +46,8 @@ class StatisticController extends Controller
     {
         return $statistic->lastMonthVisit();
     }
+    public function member(Statistic $statistic){
+        return $statistic->member();
+    }
 
 }
