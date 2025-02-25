@@ -166,11 +166,10 @@ class Statistic {
 		$output = collect($values)->values();
 
 		$userTable_stat = clone $raw_stat;
-		$userTable = $userTable_stat->groupBy('DATE(stats.created_at)')
-		->selectRaw('DATE(stats.created_at), users.name, COUNT(stats.id) as count') // Tính tổng số stat theo ngày
+		$userTable = $userTable_stat->selectRaw('DATE(stats.created_at) as created_date, users.name, COUNT(stats.id) as count') // Chỉ lấy ngày
+		->groupBy(DB::raw('DATE(stats.created_at)'), 'users.name') // Nhóm theo ngày + user.name
 		->orderBy('count', 'desc')
 		->get();
-
 		$referer_stat = clone $raw_stat;
 		$referer = $referer_stat->groupBy('referer')->orderBy('count', 'desc')->get();
 		$device_stat = clone $raw_stat;
