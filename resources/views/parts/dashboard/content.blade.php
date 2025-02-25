@@ -246,7 +246,7 @@ function getStatistic(url, el) {
     url: url,
     type: 'POST',
     beforeSend: function() {
-      el.html('Counting ...');
+      
     },
     success: function(data) {
       el.html(data);
@@ -258,7 +258,9 @@ getStatistic('{{route('stats.totalLink', [user_prefix()])}}', $("#total-link"));
 getStatistic('{{route('stats.todayVisit', [user_prefix()])}}', $("#today-visit"));
 getStatistic('{{route('stats.yesterdayVisit', [user_prefix()])}}', $("#yesterday-visit"));
 getStatistic('{{route('stats.sevenDaysVisit', [user_prefix()])}}', $("#seven-days-visit"));
+setInterval(function() {
 getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
+}, 2000);
 getStatistic('{{route('stats.thisMonthVisit', [user_prefix()])}}', $("#this-month"));
 getStatistic('{{route('stats.lastMonthVisit', [user_prefix()])}}', $("#last-month"));
 

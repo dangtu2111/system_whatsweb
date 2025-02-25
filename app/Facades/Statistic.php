@@ -147,7 +147,7 @@ class Statistic {
 		// Xóa session cũ hơn 5 phút
 		$now = Carbon::now()->timestamp;
 		$activeVisitors = array_filter($activeVisitors, function ($timestamp) use ($now) {
-			return $timestamp > ($now - 60);
+			return $timestamp > ($now - 5);
 		});
 
 		// Cập nhật lại cache với thời gian hết hạn là 5 phút
