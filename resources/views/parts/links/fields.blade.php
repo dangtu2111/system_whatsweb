@@ -69,7 +69,7 @@
 										</div>
 									</div>
 									@if(!isset($link))
-									<div class="form-group row">
+									<!-- <div class="form-group row">
 										<label class="col-lg-4 col-form-label text-lg-right text-left" for="url">Number</label>
 										<div class="col-lg-8">
 											<input type="number" name="number" class="form-control" id="number" value="">
@@ -77,7 +77,7 @@
 												The number you want to generate to the link
 											</div>
 										</div>
-									</div>
+									</div> -->
 									@endif
 									@endif
 									@if(setting('features.custom_slug'))
