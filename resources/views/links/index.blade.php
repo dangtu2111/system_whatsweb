@@ -165,7 +165,7 @@
 		$.cardProgress(me.closest('.card'));
 	
 		axios.post(
-			'{{ str_replace("http://", "https://", route_type("links.show")) }}', 
+			'{{ route_type('links.show') }}', 
 			{ id: me.attr('data-id') }, 
 			{
 				headers: {
