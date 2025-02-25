@@ -175,12 +175,13 @@ class LinkController extends Controller
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
 		
-		// $phone_number = $request->phone_code . $request->phone_number;
+		$phone_number = $request->phone_code . $request->phone_number;
 		$number =  is_numeric($request->input('number')) && (int) $request->input('number') > 0 
 		? (int) $request->input('number') 
 		: 1;
 		$links = [];
-		 // Nếu `number` > 1, tạo nhiều link
+		 // Nếu `number` > 1, tạo nhiều link\
+		
 		for ($i = 0; $i < $number; $i++) {
 			$slug = Str::random(setting('features.custom_slug_max'));
 	
@@ -191,7 +192,7 @@ class LinkController extends Controller
 	
 			$link = Link::create([
 				'phone_code'    => $request->phone_code ?? NULL,
-				'phone_number'  => $request->phone_number ?? "NULL",
+				'phone_number'  => $request->name_phone ?? "NULL",
 				'slug'          => $slug,
 				'content'       => $request->input('content') ?? NULL,
 				'user_id'       => optional(auth()->user())->id ?? NULL,
