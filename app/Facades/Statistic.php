@@ -136,58 +136,84 @@ class Statistic {
 
 	private function _baseChart1($from, $to, $user=false)
 	{
-		$stat = new Stat;
+		$stat = Stat::query();
 
-		if(user_member()) $stat = $stat->whereUsersId(user_member());
-		
+		// Lọc theo người dùng (nếu có)
+		if (user_member()) {
+			$stat->where('users_id', user_member());
+		}
+		if ($user) {
+			$stat->where('users_id', $user);
+		}
 
-		if($user) $stat = $stat->where('users_id', $user);
-
-		// Thực hiện join với bảng users để lấy user.name
+		// Thực hiện join để lấy thông tin user
 		$raw_stat = $stat->leftJoin('users', 'stats.users_id', '=', 'users.id')
-		->selectRaw('stats.*, users.name, count(*) as count')
-		->whereRaw('date(stats.created_at) between ? and ?', [$from, $to]);
+			->whereBetween(DB::raw('DATE(stats.created_at)'), [$from, $to]);
 
-		$stat = $raw_stat->groupBy(DB::raw('date(stats.created_at)'))->get();
+		// Truy vấn số lượt thống kê theo từng ngày
+		$statByDate = (clone $raw_stat)
+			->selectRaw('DATE(stats.created_at) as date, COUNT(*) as count')
+			->groupBy('date')
+			->get();
 
-		$iteratation = CarbonPeriod::create($from, $to);
-
+		// Chuẩn bị dữ liệu labels và values
+		$period = CarbonPeriod::create($from, $to);
 		$labels = [];
 		$values = [];
-		foreach($iteratation as $d) {
-			$values[$d->format('Y-m-d')] = 0;
-			$labels[] = $d->format('Y-m-d');
+
+		foreach ($period as $date) {
+			$formattedDate = $date->format('Y-m-d');
+			$labels[] = $formattedDate;
+			$values[$formattedDate] = 0;
 		}
 
-		foreach($stat as $s) {
-			$values[$s->created_at->format('Y-m-d')] = $s->count;
+		// Gán dữ liệu thống kê vào mảng values
+		foreach ($statByDate as $s) {
+			$values[$s->date] = $s->count;
 		}
 
-		$output = collect($values)->values();
+		$output = array_values($values);
 
-		$userTable_stat = clone $raw_stat;
-		$userTable = $userTable_stat->groupBy('stats.created_at')->orderBy('count', 'desc')->get();
+		// Truy vấn chung theo từng tiêu chí
+		$groupedStats = (clone $raw_stat)
+			->selectRaw('users.name, stats.referer, stats.device, stats.platform, stats.browser, COUNT(*) as count')
+			->groupBy('users.name', 'stats.referer', 'stats.device', 'stats.platform', 'stats.browser')
+			->get();
 
-		$referer_stat = clone $raw_stat;
-		$referer = $referer_stat->groupBy('referer')->orderBy('count', 'desc')->get();
-		$device_stat = clone $raw_stat;
-		$device = $device_stat->groupBy('device')->orderBy('count', 'desc')->get();
-		$platform_stat = clone $raw_stat;
-		$platform = $platform_stat->groupBy('platform')->orderBy('count', 'desc')->get();
-		$browser_stat = clone $raw_stat;
-		$browser = $browser_stat->groupBy('browser')->orderBy('count', 'desc')->get();
+		// Chia dữ liệu theo từng nhóm
+		$userTable = $groupedStats->groupBy('users_id')->map(function ($items) {
+			return $items->sum('count');
+		})->sortDesc();
 
+		$referer = $groupedStats->groupBy('referer')->map(function ($items) {
+			return $items->sum('count');
+		})->sortDesc();
+
+		$device = $groupedStats->groupBy('device')->map(function ($items) {
+			return $items->sum('count');
+		})->sortDesc();
+
+		$platform = $groupedStats->groupBy('platform')->map(function ($items) {
+			return $items->sum('count');
+		})->sortDesc();
+
+		$browser = $groupedStats->groupBy('browser')->map(function ($items) {
+			return $items->sum('count');
+		})->sortDesc();
+
+		// Trả về kết quả
 		return (object) [
 			'labels' => json_encode($labels),
 			'values' => json_encode($output),
 			'stats' => [
-				'userTable'=>$userTable,
+				'userTable' => $userTable,
 				'referer' => $referer,
 				'device' => $device,
 				'platform' => $platform,
 				'browser' => $browser,
-			]
+			],
 		];
+
 	}
 
 	public function top($take) {
