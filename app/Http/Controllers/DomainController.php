@@ -173,29 +173,29 @@ class DomainController extends Controller
 			// Lấy slug từ URL
 			$slug = preg_replace('/^www\./', '', parse_url($url, PHP_URL_HOST));
 			// Lấy danh sách IP của domain nhập vào
-			$domainIPs = dns_get_record($slug, DNS_A);
+			// $domainIPs = dns_get_record($slug, DNS_A);
 
-			// Lấy IP của server hiện tại
-			$serverIP = gethostbyname(parse_url(config('app.url'), PHP_URL_HOST));
+			// // Lấy IP của server hiện tại
+			// $serverIP = gethostbyname(parse_url(config('app.url'), PHP_URL_HOST));
 			
-			if (empty($domainIPs)) {
-				return response()->json([
-					'success' => false,
-					'message' => 'Domain chưa được trỏ về bất kỳ IP nào!'
-				], 400);
-			}
+			// if (empty($domainIPs)) {
+			// 	return response()->json([
+			// 		'success' => false,
+			// 		'message' => 'Domain chưa được trỏ về bất kỳ IP nào!'
+			// 	], 400);
+			// }
 
-			// Kiểm tra xem có IP nào của domain trùng với IP server không
-			$domainIPList = array_column($domainIPs, 'ip');
+			// // Kiểm tra xem có IP nào của domain trùng với IP server không
+			// $domainIPList = array_column($domainIPs, 'ip');
 
-			if (!in_array($serverIP, $domainIPList)) {
-				return response()->json([
-					'success' => false,
-					'message' => 'Domain chưa được trỏ về máy chủ!',
-					'expected_ip' => $serverIP,
-					'found_ips' => $domainIPList
-				], 400);
-			}
+			// if (!in_array($serverIP, $domainIPList)) {
+			// 	return response()->json([
+			// 		'success' => false,
+			// 		'message' => 'Domain chưa được trỏ về máy chủ!',
+			// 		'expected_ip' => $serverIP,
+			// 		'found_ips' => $domainIPList
+			// 	], 400);
+			// }
 			// Kiểm tra domain đã tồn tại chưa
 			if (Domain::where('slug', $slug)->exists()) {
 				return response()->json([
