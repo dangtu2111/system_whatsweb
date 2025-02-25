@@ -18,7 +18,7 @@
 						<div class="tab-pane active" id="result-raw">
 							<p>Copy the following URL, and paste it wherever you like.</p>
 							<div class="input-group">
-								<textarea type="text" class="form-control" name="raw_url" id="raw_url" readonly="" onfocus="this.setSelectionRange(0, this.value.length)"></textarea>
+								<textarea type="text" height="auto" class="form-control" name="raw_url" id="raw_url" readonly="" onfocus="this.setSelectionRange(0, this.value.length)"></textarea>
 								<div class="input-group-append">
 									<button data-clipboard-target="#raw_url" class="btn btn-primary">Copy</button>
 								</div>
