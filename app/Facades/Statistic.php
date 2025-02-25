@@ -122,9 +122,10 @@ class Statistic {
 		$stat = $stat->leftJoin('links', 'stats.links_id', 'links.id');
 		$stat = $stat->selectRaw('count(stats.links_id) as count');
 		$stat = $stat->whereRaw('date(stats.created_at) ' . $date);
+		
 
 		if(user_member())
-			$stat = $stat->whereRaw('stats.user_id = ' . user_member());
+			$stat = $stat->whereRaw('stats.users_id  = ' . user_member());
 
 		$stat = $stat->{$method}();
 

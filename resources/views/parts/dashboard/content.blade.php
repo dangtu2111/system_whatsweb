@@ -260,8 +260,8 @@ getStatistic('{{route('stats.yesterdayVisit', [user_prefix()])}}', $("#yesterday
 getStatistic('{{route('stats.sevenDaysVisit', [user_prefix()])}}', $("#seven-days-visit"));
 getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
 setInterval(function() {
-    getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
-}, 180000); // 180000 ms = 3 phút
+getStatistic('{{route('stats.activeVisitors', [user_prefix()])}}', $("#onsite"));
+}, 2000);
 getStatistic('{{route('stats.thisMonthVisit', [user_prefix()])}}', $("#this-month"));
 getStatistic('{{route('stats.lastMonthVisit', [user_prefix()])}}', $("#last-month"));
 
