@@ -181,7 +181,7 @@ class Statistic {
 			->get();
 
 		// Chia dữ liệu theo từng nhóm
-		$userTable = $groupedStats->groupBy('users_id')->map(function ($items) {
+		$userTable = $groupedStats->groupBy('name')->map(function ($items) {
 			return $items->sum('count');
 		})->sortByDesc(null);
 
