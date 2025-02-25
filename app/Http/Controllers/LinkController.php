@@ -489,8 +489,8 @@ class LinkController extends Controller
 		$activeVisitors[request()->ip()] = Carbon::now()->timestamp;
 		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
 		$ip = $request->ip();
-		$cacheKey = "visitor_last_hit-{$link->id}-{$ip}";
-		$lastHit = Cache::get($cacheKey);
+		$cacheKey1 = "visitor_last_hit-{$link->id}-{$ip}";
+		$lastHit = Cache::get($cacheKey1);
 	
 		// Nếu chưa có lần truy cập hoặc lần truy cập cuối đã quá 60 phút thì cập nhật hit
 		
