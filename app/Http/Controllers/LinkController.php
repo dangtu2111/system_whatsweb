@@ -502,6 +502,7 @@ class LinkController extends Controller
 		$ip = $request->ip();
 		$cacheKey1 = "visitor_last_hit-{$link->id}-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
+		
 	
 		// Nếu chưa có lần truy cập hoặc lần truy cập cuối đã quá 60 phút thì cập nhật hit
 		
@@ -540,15 +541,15 @@ class LinkController extends Controller
 			return array_fill(0, $url->weight, $url);
 		})->shuffle()->first();
 		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= 60) {
-			$link->update([
-				'hit' => $link->hit + 1
-			]);
-			Cache::put($cacheKey, Carbon::now()->timestamp, now()->addMinutes(60));
+			
+			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(60));
 			$randomUrl->update([
 				'hit' => $randomUrl->hit + 1
 			]);
+			$link->update([
+				'hit' => $link->hit + 1
+			]);
 		}
-		
 		if ($randomUrl) {
 			return redirect($randomUrl->url, 302);
 		}
