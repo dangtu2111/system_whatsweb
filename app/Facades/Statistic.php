@@ -183,23 +183,23 @@ class Statistic {
 		// Chia dữ liệu theo từng nhóm
 		$userTable = $groupedStats->groupBy('users_id')->map(function ($items) {
 			return $items->sum('count');
-		})->sortDesc();
+		})->sortDesc(null);
 
 		$referer = $groupedStats->groupBy('referer')->map(function ($items) {
 			return $items->sum('count');
-		})->sortDesc();
+		})->sortDesc(null);
 
 		$device = $groupedStats->groupBy('device')->map(function ($items) {
 			return $items->sum('count');
-		})->sortDesc();
+		})->sortDesc(null);
 
 		$platform = $groupedStats->groupBy('platform')->map(function ($items) {
 			return $items->sum('count');
-		})->sortDesc();
+		})->sortDesc(null);
 
 		$browser = $groupedStats->groupBy('browser')->map(function ($items) {
 			return $items->sum('count');
-		})->sortDesc();
+		})->sortDesc(null);
 
 		// Trả về kết quả
 		return (object) [
