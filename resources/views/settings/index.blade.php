@@ -135,6 +135,12 @@
 	                            			<input value="{!! setting('features.custom_slug_min') !!}" type="number" class="form-control" id="features_custom_slug_min" name="custom_slug_min">
 	                            		</div>
 	                            	</div>
+									<div class="form-group row">
+	                            		<label class="col-md-3 text-left text-md-right" for="features_custom_update_min">Custom Minute Update Total View.</label>
+	                            		<div class="col-md-9">
+	                            			<input value="{!! setting('features.custom_update_min') !!}" type="number" class="form-control" id="features_custom_update_min" name="custom_update_min">
+	                            		</div>
+	                            	</div>
 	                            	<div class="form-group row">
 	                            		<label class="col-md-3 text-left text-md-right" for="features_custom_slug_max">Custom URL Max.</label>
 	                            		<div class="col-md-9">
