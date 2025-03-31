@@ -581,7 +581,7 @@ class LinkController extends Controller
             $link->update(['hit' => $link->hit + 1]);
         }
     } else {
-		dd($excludedIds);
+		
         // Trong thời gian custom_update_min: Loại trừ các link đã chọn
         $randomUrl = DestinationUrl::whereNotIn('id', $excludedIds)
             ->get()
@@ -590,7 +590,7 @@ class LinkController extends Controller
             })
             ->shuffle()
             ->first();
-
+		dd($randomUrl);
         if ($randomUrl) {
             // Append ID vào excludedIds bằng array_push
             array_push($excludedIds, $randomUrl->id);
