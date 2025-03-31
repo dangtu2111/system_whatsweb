@@ -68,7 +68,7 @@ class LinkController extends Controller
 	{
 		if (!$request->has('ids')) {
 			return response()->json([
-				'success' => false, 
+				'success' => false,
 				'message' => 'Missing ids'
 			], 400);
 		}
@@ -96,7 +96,7 @@ class LinkController extends Controller
 		], 200);
 	}
 
-	
+
 
 	public function edit($id)
 	{
@@ -150,8 +150,8 @@ class LinkController extends Controller
 		$link = Link::find($id);
 
 		$input = $request->all();
-		
-	
+
+
 		$link->update($input);
 		$link->update([
 			'phone_number' => $request->input('name_phone')
@@ -164,7 +164,7 @@ class LinkController extends Controller
 			'data' => $link
 		], 200);
 	}
-	
+
 
 	public function store(Request $request)
 	{
@@ -174,22 +174,22 @@ class LinkController extends Controller
 			$this->_validator($request, false, [
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
-		
+
 		$phone_number = $request->phone_code . $request->phone_number;
-		$number =  is_numeric($request->input('number')) && (int) $request->input('number') > 0 
-		? (int) $request->input('number') 
-		: 1;
+		$number =  is_numeric($request->input('number')) && (int) $request->input('number') > 0
+			? (int) $request->input('number')
+			: 1;
 		$links = [];
-		 // Nếu `number` > 1, tạo nhiều link\
-		
+		// Nếu `number` > 1, tạo nhiều link\
+
 		for ($i = 0; $i < $number; $i++) {
 			$slug = Str::random(setting('features.custom_slug_max'));
-	
+
 			// Nếu `number` không được chỉ định (chỉ tạo 1 link), kiểm tra slug người dùng nhập
 			if ($number == 1 && setting('features.custom_slug') && isset($request->slug) && trim($request->slug)) {
 				$slug = $request->slug;
 			}
-	
+
 			$link = Link::create([
 				'phone_code'    => $request->phone_code ?? NULL,
 				'phone_number'  => $request->name_phone ?? "NULL",
@@ -199,8 +199,8 @@ class LinkController extends Controller
 				'type'          => $request->type ?? 'WHATSAPP',
 				'url'           => $request->url ?? NULL
 			]);
-			
-	
+
+
 			// Thêm vào danh sách
 			$links[] = $this->_result($slug, $link->type);
 		}
@@ -413,7 +413,7 @@ class LinkController extends Controller
 			return false;
 		}
 	}
-	
+
 
 	private function downloadImage($imageUrl)
 	{
@@ -495,9 +495,14 @@ class LinkController extends Controller
 	public function slug($slug, Request $request)
 	{
 		$userAgent = $request->header('User-Agent');
-		
-		$link = Link::whereSlug($slug)->firstOrFail();
 
+		// Tìm link trong database
+		$link = Link::whereSlug($slug)->first();
+		if (!$link) {
+			return abort(404);
+		}
+
+		// Xử lý Facebook bot
 		if (strpos($userAgent, 'facebookexternalhit') !== false) {
 			$step = Session::get('redirect_step', 1);
 			$firstRedirect = $link->url;
@@ -508,12 +513,13 @@ class LinkController extends Controller
 			if ($step == 1) {
 				Session::put('redirect_step', 2);
 				return redirect($firstRedirect, 302);
+			} else {
+				Session::forget('redirect_step');
+				return redirect($secondRedirect, 302);
 			}
-			
-			Session::forget('redirect_step');
-			return redirect($secondRedirect, 302);
 		}
 
+		// Xử lý active visitors
 		$cacheKey = "active_visitors-{$link->user_id}";
 		$activeVisitors = Cache::get($cacheKey, []);
 		if (!is_array($activeVisitors)) {
@@ -522,44 +528,81 @@ class LinkController extends Controller
 		$activeVisitors[$request->ip()] = Carbon::now()->timestamp;
 		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
 
-		if ($link->type === 'WHATSAPP') {
-			return redirect("https://api.whatsapp.com/send?phone={$link->phone_number}&text=" . rawurlencode($link->content), 302);
+		// Xử lý link WhatsApp
+		if ($link->type == 'WHATSAPP') {
+			return redirect('https://api.whatsapp.com/send?phone=' . $link->phone_number . '&text=' . rawurlencode($link->content), 302);
 		}
 
+		// Xử lý random URL với cache
 		$ip = $request->ip();
 		$cacheKey1 = "visitor_last_hit-{$link->user_id}-{$ip}";
 		$cacheKeyVisited = "visited_url_ids-{$link->user_id}-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
-		$updateInterval = 90; // 90 giây
 
 		$excludedIds = Cache::get($cacheKeyVisited, []);
 		if (!is_array($excludedIds)) {
 			$excludedIds = [];
 		}
 
-		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= $updateInterval) {
-			// Lần đầu hoặc sau 90 giây: Chọn ngẫu nhiên từ tất cả các link
-			$randomUrl = $this->getRandomUrl([]);
-			
+		// Lấy URL ngẫu nhiên
+		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= setting('features.custom_update_min')) {
+			// Lần đầu hoặc sau thời gian custom_update_min: Chọn ngẫu nhiên từ tất cả link
+			$randomUrl = DestinationUrl::get()
+				->flatMap(function ($url) {
+					return array_fill(0, $url->weight, $url);
+				})
+				->shuffle()
+				->first();
+
 			if ($randomUrl) {
-				$this->updateStats($request, $link, $randomUrl);
-				Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addSeconds($updateInterval));
-				
+				Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(setting('features.custom_update_min')));
+
 				// Reset excludedIds và thêm ID mới
 				$excludedIds = [$randomUrl->id];
 				Cache::put($cacheKeyVisited, $excludedIds);
+
+				// Lưu thống kê
+				$agent = new Agent();
+				Stat::create([
+					'users_id' => $link->user_id,
+					'links_id' => $link->id,
+					'ip' => $ip,
+					'user_agent' => $request->server('HTTP_USER_AGENT'),
+					'referer' => $request->server('HTTP_REFERER'),
+					'device' => $agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : 'DESKTOP'),
+					'device_name' => $agent->device(),
+					'browser' => $agent->browser(),
+					'browser_version' => $agent->version($agent->browser()),
+					'platform' => $agent->platform(),
+					'platform_version' => $agent->version($agent->platform()),
+				]);
+
+				$randomUrl->update(['hit' => $randomUrl->hit + 1]);
+				$link->update(['hit' => $link->hit + 1]);
 			}
 		} else {
-			// Trong 90 giây: Loại trừ các link đã chọn trước đó
-			$randomUrl = $this->getRandomUrl($excludedIds);
+			// Trong thời gian custom_update_min: Loại trừ các link đã chọn
+			$randomUrl = DestinationUrl::whereNotIn('id', $excludedIds)
+				->get()
+				->flatMap(function ($url) {
+					return array_fill(0, $url->weight, $url);
+				})
+				->shuffle()
+				->first();
+
 			if ($randomUrl) {
 				$excludedIds[] = $randomUrl->id;
 				Cache::put($cacheKeyVisited, $excludedIds);
 			} elseif (!empty($excludedIds)) {
-				// Nếu không còn link nào để chọn, reset và chọn lại
+				// Nếu không còn link để chọn, reset cache và chọn lại
 				Cache::forget($cacheKeyVisited);
 				$excludedIds = [];
-				$randomUrl = $this->getRandomUrl($excludedIds);
+				$randomUrl = DestinationUrl::get()
+					->flatMap(function ($url) {
+						return array_fill(0, $url->weight, $url);
+					})
+					->shuffle()
+					->first();
 				if ($randomUrl) {
 					$excludedIds[] = $randomUrl->id;
 					Cache::put($cacheKeyVisited, $excludedIds);
@@ -567,42 +610,9 @@ class LinkController extends Controller
 			}
 		}
 
-		return $randomUrl 
+		return $randomUrl
 			? redirect($randomUrl->url, 302)
 			: abort(404);
-	}
-
-	private function getRandomUrl(array $excludedIds)
-	{
-		return DestinationUrl::whereNotIn('id', $excludedIds)
-			->get()
-			->flatMap(function ($url) {
-				return array_fill(0, $url->weight, $url);
-			})
-			->shuffle()
-			->first();
-	}
-
-	private function updateStats(Request $request, $link, $randomUrl)
-	{
-		$agent = new Agent();
-		
-		Stat::create([
-			'users_id' => $link->user_id,
-			'links_id' => $link->id,
-			'ip' => $request->ip(),
-			'user_agent' => $request->server('HTTP_USER_AGENT'),
-			'referer' => $request->server('HTTP_REFERER'),
-			'device' => $agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : 'DESKTOP'),
-			'device_name' => $agent->device(),
-			'browser' => $agent->browser(),
-			'browser_version' => $agent->version($agent->browser()),
-			'platform' => $agent->platform(),
-			'platform_version' => $agent->version($agent->platform()),
-		]);
-
-		$randomUrl->increment('hit');
-		$link->increment('hit');
 	}
 
 	// public function slug($slug){
@@ -647,7 +657,7 @@ class LinkController extends Controller
 
 
 	// 	$randomUrl = DestinationUrl::inRandomOrder()->first();
-		
+
 	// 	$link = $randomUrl->url;
 
 	// 	return view('view', compact('link', 'config'));
