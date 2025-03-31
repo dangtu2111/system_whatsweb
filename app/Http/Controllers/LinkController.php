@@ -538,7 +538,7 @@ class LinkController extends Controller
 		$cacheKey1 = "visitor_last_hit-{$link->user_id}-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
 		
-	
+		dd($lastHit);
 		// Nếu chưa có lần truy cập hoặc lần truy cập cuối đã quá 60 phút thì cập nhật hit
 		
 		
