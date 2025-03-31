@@ -581,7 +581,7 @@ class LinkController extends Controller
             $link->update(['hit' => $link->hit + 1]);
         }
     } else {
-		// dd(setting('features.custom_update_min'));
+		dd(setting('features.custom_update_min'));
         // Trong thời gian custom_update_min: Loại trừ các link đã chọn
         $randomUrl = DestinationUrl::whereNotIn('id', $excludedIds)
             ->get()
