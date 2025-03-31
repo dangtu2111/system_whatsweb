@@ -556,7 +556,7 @@ class LinkController extends Controller
 
         if ($randomUrl) {
             Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(setting('features.custom_update_min')));
-            dd($excludedIds);
+   
             // Append ID vào excludedIds bằng array_push
             array_push($excludedIds, $randomUrl->id);
             Cache::put($cacheKeyVisited, $excludedIds);
@@ -581,6 +581,7 @@ class LinkController extends Controller
             $link->update(['hit' => $link->hit + 1]);
         }
     } else {
+		dd($excludedIds);
         // Trong thời gian custom_update_min: Loại trừ các link đã chọn
         $randomUrl = DestinationUrl::whereNotIn('id', $excludedIds)
             ->get()
