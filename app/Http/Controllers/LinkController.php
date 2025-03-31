@@ -595,7 +595,7 @@ class LinkController extends Controller
             // Append ID vào excludedIds bằng array_push
             array_push($excludedIds, $randomUrl->id);
             Cache::put($cacheKeyVisited, $excludedIds);
-			dd($cacheKeyVisited,$excludedIds,Cache::get($cacheKeyVisited))
+			dd($cacheKeyVisited,$excludedIds,Cache::get($cacheKeyVisited));
         } elseif (!empty($excludedIds)) {
             // Nếu không còn link để chọn, reset cache và chọn lại
             Cache::forget($cacheKeyVisited);
