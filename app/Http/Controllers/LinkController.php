@@ -526,7 +526,7 @@ class LinkController extends Controller
         $activeVisitors = [];
     }
     $activeVisitors[$request->ip()] = Carbon::now()->timestamp;
-    Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
+    Cache::put($cacheKey, $activeVisitors, now()->addMinutes(setting('features.custom_update_min')));
 
     // Xử lý link WhatsApp
     if ($link->type == 'WHATSAPP') {
@@ -559,7 +559,7 @@ class LinkController extends Controller
    
             // Append ID vào excludedIds bằng array_push
             array_push($excludedIds, $randomUrl->id);
-            Cache::put($cacheKeyVisited, $excludedIds);
+            Cache::put($cacheKeyVisited, $excludedIds,now()->addMinutes(setting('features.custom_update_min')));
 
             // Lưu thống kê
             $agent = new Agent();
@@ -595,7 +595,7 @@ class LinkController extends Controller
             // Append ID vào excludedIds bằng array_push
             array_push($excludedIds, $randomUrl->id);
             Cache::put($cacheKeyVisited, $excludedIds, now()->addMinutes(setting('features.custom_update_min')));
-			dd($cacheKeyVisited,$excludedIds,Cache::get($cacheKeyVisited));
+			// dd($cacheKeyVisited,$excludedIds,Cache::get($cacheKeyVisited));
         } elseif (!empty($excludedIds)) {
             // Nếu không còn link để chọn, reset cache và chọn lại
             Cache::forget($cacheKeyVisited);
@@ -608,7 +608,7 @@ class LinkController extends Controller
                 ->first();
             if ($randomUrl) {
                 array_push($excludedIds, $randomUrl->id);
-                Cache::put($cacheKeyVisited, $excludedIds);
+                Cache::put($cacheKeyVisited, $excludedIds,now()->addMinutes(setting('features.custom_update_min')));
             }
         }
     }
