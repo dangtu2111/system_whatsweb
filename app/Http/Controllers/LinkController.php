@@ -539,7 +539,7 @@ class LinkController extends Controller
     $cacheKeyVisited = "visited_url_ids-{$link->user_id}-{$ip}";
     $lastHit = Cache::get($cacheKey1);
 
-    $excludedIds = Cache::get($cacheKeyVisited, []);
+    $excludedIds = Cache::get($cacheKeyVisited);
     if (!is_array($excludedIds)) {
         $excludedIds = [];
     }
