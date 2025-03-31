@@ -528,36 +528,42 @@ class LinkController extends Controller
 
 		$ip = $request->ip();
 		$cacheKey1 = "visitor_last_hit-{$link->user_id}-{$ip}";
+		$cacheKeyVisited = "visited_url_ids-{$link->user_id}-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
-		$updateInterval = setting('features.custom_update_min');
+		$updateInterval = 90; // 90 giây
 
-		$cacheKeyVisited = "visited_url_ids-{$link->user_id}";
 		$excludedIds = Cache::get($cacheKeyVisited, []);
 		if (!is_array($excludedIds)) {
 			$excludedIds = [];
 		}
 
 		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= $updateInterval) {
-			$randomUrl = $this->getRandomUrl($excludedIds);
+			// Lần đầu hoặc sau 90 giây: Chọn ngẫu nhiên từ tất cả các link
+			$randomUrl = $this->getRandomUrl([]);
 			
-			if (!$randomUrl && !empty($excludedIds)) {
-				Cache::forget($cacheKeyVisited);
-				$excludedIds = [];
-				$randomUrl = $this->getRandomUrl($excludedIds);
-			}
-
 			if ($randomUrl) {
 				$this->updateStats($request, $link, $randomUrl);
-				Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes($updateInterval));
+				Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addSeconds($updateInterval));
 				
-				$excludedIds[] = $randomUrl->id;
+				// Reset excludedIds và thêm ID mới
+				$excludedIds = [$randomUrl->id];
 				Cache::put($cacheKeyVisited, $excludedIds);
 			}
 		} else {
-			$randomUrl = $this->getRandomUrl($excludedIds); // Sử dụng excludedIds để loại trừ
+			// Trong 90 giây: Loại trừ các link đã chọn trước đó
+			$randomUrl = $this->getRandomUrl($excludedIds);
 			if ($randomUrl) {
 				$excludedIds[] = $randomUrl->id;
 				Cache::put($cacheKeyVisited, $excludedIds);
+			} elseif (!empty($excludedIds)) {
+				// Nếu không còn link nào để chọn, reset và chọn lại
+				Cache::forget($cacheKeyVisited);
+				$excludedIds = [];
+				$randomUrl = $this->getRandomUrl($excludedIds);
+				if ($randomUrl) {
+					$excludedIds[] = $randomUrl->id;
+					Cache::put($cacheKeyVisited, $excludedIds);
+				}
 			}
 		}
 
