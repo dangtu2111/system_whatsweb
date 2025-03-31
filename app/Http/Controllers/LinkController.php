@@ -592,7 +592,7 @@ class LinkController extends Controller
 
 			if ($randomUrl) {
 				$excludedIds[] = $randomUrl->id;
-				dd($excludedIds);
+				
 				Cache::put($cacheKeyVisited, $excludedIds);
 			} elseif (!empty($excludedIds)) {
 				// Nếu không còn link để chọn, reset cache và chọn lại
