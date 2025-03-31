@@ -555,8 +555,7 @@ class LinkController extends Controller
 				->first();
 
 			if ($randomUrl) {
-				Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(setting('features.custom_update_min')));
-
+				dd($excludedIds);
 				// Append ID vào excludedIds bằng array_push
 				array_push($excludedIds, $randomUrl->id);
 				Cache::put($cacheKeyVisited, $excludedIds);
