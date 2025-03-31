@@ -68,7 +68,7 @@ class LinkController extends Controller
 	{
 		if (!$request->has('ids')) {
 			return response()->json([
-				'success' => false,
+				'success' => false, 
 				'message' => 'Missing ids'
 			], 400);
 		}
@@ -96,7 +96,7 @@ class LinkController extends Controller
 		], 200);
 	}
 
-
+	
 
 	public function edit($id)
 	{
@@ -150,8 +150,8 @@ class LinkController extends Controller
 		$link = Link::find($id);
 
 		$input = $request->all();
-
-
+		
+	
 		$link->update($input);
 		$link->update([
 			'phone_number' => $request->input('name_phone')
@@ -164,7 +164,7 @@ class LinkController extends Controller
 			'data' => $link
 		], 200);
 	}
-
+	
 
 	public function store(Request $request)
 	{
@@ -174,22 +174,22 @@ class LinkController extends Controller
 			$this->_validator($request, false, [
 				'url' => 'required'
 			], ['phone_code', 'phone_number', 'content']);
-
+		
 		$phone_number = $request->phone_code . $request->phone_number;
-		$number =  is_numeric($request->input('number')) && (int) $request->input('number') > 0
-			? (int) $request->input('number')
-			: 1;
+		$number =  is_numeric($request->input('number')) && (int) $request->input('number') > 0 
+		? (int) $request->input('number') 
+		: 1;
 		$links = [];
-		// Nếu `number` > 1, tạo nhiều link\
-
+		 // Nếu `number` > 1, tạo nhiều link\
+		
 		for ($i = 0; $i < $number; $i++) {
 			$slug = Str::random(setting('features.custom_slug_max'));
-
+	
 			// Nếu `number` không được chỉ định (chỉ tạo 1 link), kiểm tra slug người dùng nhập
 			if ($number == 1 && setting('features.custom_slug') && isset($request->slug) && trim($request->slug)) {
 				$slug = $request->slug;
 			}
-
+	
 			$link = Link::create([
 				'phone_code'    => $request->phone_code ?? NULL,
 				'phone_number'  => $request->name_phone ?? "NULL",
@@ -199,8 +199,8 @@ class LinkController extends Controller
 				'type'          => $request->type ?? 'WHATSAPP',
 				'url'           => $request->url ?? NULL
 			]);
-
-
+			
+	
 			// Thêm vào danh sách
 			$links[] = $this->_result($slug, $link->type);
 		}
@@ -413,7 +413,7 @@ class LinkController extends Controller
 			return false;
 		}
 	}
-
+	
 
 	private function downloadImage($imageUrl)
 	{
@@ -495,126 +495,103 @@ class LinkController extends Controller
 	public function slug($slug, Request $request)
 	{
 		$userAgent = $request->header('User-Agent');
-
-		// Tìm link trong database
+		// Nếu không phải Facebook bot, tìm link trong database
 		$link = Link::whereSlug($slug)->first();
 		if (!$link) {
 			return abort(404);
 		}
-
-		// Xử lý Facebook bot
+		// Kiểm tra nếu user-agent là Facebook bot
 		if (strpos($userAgent, 'facebookexternalhit') !== false) {
-			$step = Session::get('redirect_step', 1);
+			$step = Session::get('redirect_step', 1); // Lấy bước chuyển hướng
+
 			$firstRedirect = $link->url;
+
 			$secondRedirect = "https://origincache-internal-services-all.fbcdn.net/v/t39.30808-6/470227724_2947172028794605_3550754267355333831_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeGeX3C7NQxyMrxJ15dN4KaMzbkra3R2QZjNuStrdHZBmMpsNzn7GabI0JqRO5v78eyVFUC0ZfHAuhex5Jo-Cyr-&_nc_ohc=fxYIHsxDOu8Q7kNvgFJvkLm&_nc_oc=AdhXqbnRE_vX86npbwo9ZaMlRp-te_kwYR95Ip3FrPV5X_Jc45wC6QVse0ZqThHdh2I&_nc_zt=23&_nc_ht=scontent.fdad3-4.fna&_nc_gid=AIjvqX_G8B3-bHNk6U6euLD&oh=00_AYCCCY3YHvr_DemEByzOGzfZ8dGZ4eAujebJraasvWiqZg&oe=67C0B5D0";
 
 			Log::info('User-Agent:', ['user_agent' => $userAgent]);
 
 			if ($step == 1) {
-				Session::put('redirect_step', 2);
+				Session::put('redirect_step', 2); // Chuyển sang bước 2
 				return redirect($firstRedirect, 302);
 			} else {
-				Session::forget('redirect_step');
+				Session::forget('redirect_step'); // Xóa trạng thái để tránh vòng lặp vô hạn
 				return redirect($secondRedirect, 302);
 			}
 		}
-
-		// Xử lý active visitors
 		$cacheKey = "active_visitors-{$link->user_id}";
+
+		// Lấy dữ liệu từ cache
 		$activeVisitors = Cache::get($cacheKey, []);
+
+		// Đảm bảo giá trị lấy ra là một mảng
 		if (!is_array($activeVisitors)) {
 			$activeVisitors = [];
 		}
-		$activeVisitors[$request->ip()] = Carbon::now()->timestamp;
+
+		// Gán giá trị vào mảng
+		$activeVisitors[request()->ip()] = Carbon::now()->timestamp;
+
+		// Cập nhật lại cache
 		Cache::put($cacheKey, $activeVisitors, now()->addMinutes(1));
 
-		// Xử lý link WhatsApp
+		$ip = $request->ip();
+		$cacheKey1 = "visitor_last_hit-{$link->user_id}-{$ip}";
+		$lastHit = Cache::get($cacheKey1);
+		
+		dd($lastHit);
+		// Nếu chưa có lần truy cập hoặc lần truy cập cuối đã quá 60 phút thì cập nhật hit
+		
+		
+		// // Cập nhật lượt truy cập
+		// $link->update([
+		// 	'hit' => $link->hit + 1
+		// ]);
+
+		// Lấy thông tin user
+		
+
+		// Nếu là link WhatsApp
 		if ($link->type == 'WHATSAPP') {
 			return redirect('https://api.whatsapp.com/send?phone=' . $link->phone_number . '&text=' . rawurlencode($link->content), 302);
 		}
 
-		// Xử lý random URL với cache
-		$ip = $request->ip();
-		$cacheKey1 = "visitor_last_hit-{$link->user_id}-{$ip}";
-		$cacheKeyVisited = "visited_url_ids-{$link->user_id}-{$ip}";
-		$lastHit = Cache::get($cacheKey1);
-
-		$excludedIds = Cache::get($cacheKeyVisited, []);
-		dd($excludedIds);
-		if (!is_array($excludedIds)) {
-			$excludedIds = [];
-		}
-
-		// Lấy URL ngẫu nhiên
+		// Lấy URL ngẫu nhiên từ bảng DestinationUrl
+		$randomUrl = DestinationUrl::get()->flatMap(function ($url) {
+			return array_fill(0, $url->weight, $url);
+		})->shuffle()->first();
 		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= setting('features.custom_update_min')) {
-			// Lần đầu hoặc sau thời gian custom_update_min: Chọn ngẫu nhiên từ tất cả link
-			$randomUrl = DestinationUrl::get()
-				->flatMap(function ($url) {
-					return array_fill(0, $url->weight, $url);
-				})
-				->shuffle()
-				->first();
+			
+			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(setting('features.custom_update_min')));
+			$ip = $request->ip();
+			$agent = new Agent();
 
-			if ($randomUrl) {
-				Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(setting('features.custom_update_min')));
-
-				// Reset excludedIds và thêm ID mới
-				$excludedIds = [$randomUrl->id];
-				Cache::put($cacheKeyVisited, $excludedIds);
-
-				// Lưu thống kê
-				$agent = new Agent();
-				Stat::create([
-					'users_id' => $link->user_id,
-					'links_id' => $link->id,
-					'ip' => $ip,
-					'user_agent' => $request->server('HTTP_USER_AGENT'),
-					'referer' => $request->server('HTTP_REFERER'),
-					'device' => $agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : 'DESKTOP'),
-					'device_name' => $agent->device(),
-					'browser' => $agent->browser(),
-					'browser_version' => $agent->version($agent->browser()),
-					'platform' => $agent->platform(),
-					'platform_version' => $agent->version($agent->platform()),
-				]);
-
-				$randomUrl->update(['hit' => $randomUrl->hit + 1]);
-				$link->update(['hit' => $link->hit + 1]);
-			}
-		} else {
-			// Trong thời gian custom_update_min: Loại trừ các link đã chọn
-			$randomUrl = DestinationUrl::whereNotIn('id', $excludedIds)
-				->get()
-				->flatMap(function ($url) {
-					return array_fill(0, $url->weight, $url);
-				})
-				->shuffle()
-				->first();
-
-			if ($randomUrl) {
-				$excludedIds[] = $randomUrl->id;
-				
-				Cache::put($cacheKeyVisited, $excludedIds);
-			} elseif (!empty($excludedIds)) {
-				// Nếu không còn link để chọn, reset cache và chọn lại
-				Cache::forget($cacheKeyVisited);
-				$excludedIds = [];
-				$randomUrl = DestinationUrl::get()
-					->flatMap(function ($url) {
-						return array_fill(0, $url->weight, $url);
-					})
-					->shuffle()
-					->first();
-				if ($randomUrl) {
-					$excludedIds[] = $randomUrl->id;
-					Cache::put($cacheKeyVisited, $excludedIds);
-				}
-			}
+			// Lưu thống kê
+			Stat::create([
+				'users_id' => $link->user_id,
+				'links_id' => $link->id,
+				'ip' => $ip,
+				'user_agent' => $request->server('HTTP_USER_AGENT'),
+				'referer' => $request->server('HTTP_REFERER'),
+				'device' => $agent->isMobile() ? 'MOBILE' : ($agent->isTablet() ? 'TABLET' : 'DESKTOP'),
+				'device_name' => $agent->device(),
+				'browser' => $agent->browser(),
+				'browser_version' => $agent->version($agent->browser()),
+				'platform' =>  $agent->platform(),
+				'platform_version' =>  $agent->version($agent->platform()),
+			]);
+			$randomUrl->update([
+				'hit' => $randomUrl->hit + 1
+			]);
+			$link->update([
+				'hit' => $link->hit + 1
+			]);
+		}
+		if ($randomUrl) {
+			return redirect($randomUrl->url, 302);
 		}
 
-		return $randomUrl
-			? redirect($randomUrl->url, 302)
-			: abort(404);
+		// Nếu không có URL nào hợp lệ
+		return abort(404);
 	}
 
 	// public function slug($slug){
@@ -659,7 +636,7 @@ class LinkController extends Controller
 
 
 	// 	$randomUrl = DestinationUrl::inRandomOrder()->first();
-
+		
 	// 	$link = $randomUrl->url;
 
 	// 	return view('view', compact('link', 'config'));
