@@ -537,30 +537,42 @@ class LinkController extends Controller
 		$ip = $request->ip();
 		$cacheKey1 = "visitor_last_hit-{$link->user_id}-{$ip}";
 		$lastHit = Cache::get($cacheKey1);
-		
-	
-		// Nếu chưa có lần truy cập hoặc lần truy cập cuối đã quá 60 phút thì cập nhật hit
-		
-		
-		// // Cập nhật lượt truy cập
-		// $link->update([
-		// 	'hit' => $link->hit + 1
-		// ]);
-
-		// Lấy thông tin user
-		
-
 		// Nếu là link WhatsApp
 		if ($link->type == 'WHATSAPP') {
 			return redirect('https://api.whatsapp.com/send?phone=' . $link->phone_number . '&text=' . rawurlencode($link->content), 302);
 		}
 
 		// Lấy URL ngẫu nhiên từ bảng DestinationUrl
-		$randomUrl = DestinationUrl::get()->flatMap(function ($url) {
-			return array_fill(0, $url->weight, $url);
-		})->shuffle()->first();
+		
 		if (!$lastHit || Carbon::now()->diffInMinutes(Carbon::createFromTimestamp($lastHit)) >= setting('features.custom_update_min')) {
-			
+			$cacheKeyVisited = "visited_url_ids-{$link->user_id}";
+    
+			// Lấy danh sách ID đã truy cập từ cache, mặc định là mảng rỗng
+			$excludedIds = Cache::get($cacheKeyVisited, []);
+			if (!is_array($excludedIds)) {
+				$excludedIds = [];
+			}
+			// Chọn $randomUrl, loại trừ các ID đã truy cập
+			$randomUrl = DestinationUrl::whereNotIn('id', $excludedIds)
+				->get()
+				->flatMap(function ($url) {
+					return array_fill(0, $url->weight, $url);
+				})
+				->shuffle()
+				->first();
+
+			// Nếu không tìm thấy $randomUrl (do tất cả ID都被 loại trừ), reset danh sách và thử lại
+			if (!$randomUrl && !empty($excludedIds)) {
+				Cache::forget($cacheKeyVisited); // Xóa danh sách đã truy cập
+				$excludedIds = []; // Reset $excludedIds
+				$randomUrl = DestinationUrl::whereNotIn('id', $excludedIds)
+					->get()
+					->flatMap(function ($url) {
+						return array_fill(0, $url->weight, $url);
+					})
+					->shuffle()
+					->first();
+			}
 			Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(setting('features.custom_update_min')));
 			$ip = $request->ip();
 			$agent = new Agent();
@@ -585,6 +597,10 @@ class LinkController extends Controller
 			$link->update([
 				'hit' => $link->hit + 1
 			]);
+		}else{
+			$randomUrl = DestinationUrl::get()->flatMap(function ($url) {
+				return array_fill(0, $url->weight, $url);
+			})->shuffle()->first();
 		}
 		if ($randomUrl) {
 			return redirect($randomUrl->url, 302);
