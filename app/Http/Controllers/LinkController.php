@@ -540,6 +540,7 @@ class LinkController extends Controller
 		$lastHit = Cache::get($cacheKey1);
 
 		$excludedIds = Cache::get($cacheKeyVisited, []);
+		dd($excludedIds);
 		if (!is_array($excludedIds)) {
 			$excludedIds = [];
 		}
@@ -555,9 +556,10 @@ class LinkController extends Controller
 				->first();
 
 			if ($randomUrl) {
-				dd($excludedIds);
-				// Append ID vào excludedIds bằng array_push
-				array_push($excludedIds, $randomUrl->id);
+				Cache::put($cacheKey1, Carbon::now()->timestamp, now()->addMinutes(setting('features.custom_update_min')));
+
+				// Reset excludedIds và thêm ID mới
+				$excludedIds = [$randomUrl->id];
 				Cache::put($cacheKeyVisited, $excludedIds);
 
 				// Lưu thống kê
@@ -590,8 +592,8 @@ class LinkController extends Controller
 				->first();
 
 			if ($randomUrl) {
-				// Append ID vào excludedIds bằng array_push
-				array_push($excludedIds, $randomUrl->id);
+				$excludedIds[] = $randomUrl->id;
+				
 				Cache::put($cacheKeyVisited, $excludedIds);
 			} elseif (!empty($excludedIds)) {
 				// Nếu không còn link để chọn, reset cache và chọn lại
@@ -604,7 +606,7 @@ class LinkController extends Controller
 					->shuffle()
 					->first();
 				if ($randomUrl) {
-					array_push($excludedIds, $randomUrl->id);
+					$excludedIds[] = $randomUrl->id;
 					Cache::put($cacheKeyVisited, $excludedIds);
 				}
 			}
